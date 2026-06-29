@@ -7,4 +7,5 @@ htmlcov/
 dist/
 build/
 *.egg-info/
+backtest-results/
 *:Zone.Identifier

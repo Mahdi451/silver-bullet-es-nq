@@ -99,8 +99,8 @@ def test_rejects_nonexistent_or_ambiguous_new_york_times(tmp_path, timestamp):
             ],
             "duplicate",
         ),
-        ([ ["2024-01-08 10:00", 100, 99, 98, 100, 1] ], "OHLC"),
-        ([ ["2024-01-08 10:00", 100, 101, 99, 100, -1] ], "volume"),
+        ([["2024-01-08 10:00", 100, 99, 98, 100, 1]], "OHLC"),
+        ([["2024-01-08 10:00", 100, 101, 99, 100, -1]], "volume"),
     ],
 )
 def test_rejects_unsafe_market_data(tmp_path, rows, message):
@@ -135,3 +135,71 @@ def test_reports_missing_open_minutes_but_ignores_weekend_closure(tmp_path):
     report = CSVBarLoader(schema).load(path).report
     assert report.missing_minutes == 1
     assert report.missing_intervals[0].start.strftime("%a %H:%M") == "Sun 18:01"
+
+
+def test_rejects_off_tick_prices(tmp_path):
+    path = _write_csv(
+        tmp_path,
+        [
+            {
+                "timestamp": "2024-01-08 10:00",
+                "open": 100.10,
+                "high": 101.00,
+                "low": 99.00,
+                "close": 100.50,
+                "volume": 1,
+            }
+        ],
+    )
+    schema = CSVSchema(instrument="ES", source_timezone="America/New_York")
+    with pytest.raises(DataValidationError, match="tick grid"):
+        CSVBarLoader(schema).load(path)
+
+
+def test_contract_column_and_provenance_are_preserved(tmp_path):
+    path = _write_csv(
+        tmp_path,
+        [
+            {
+                "timestamp": "2024-01-08 10:00",
+                "open": 100,
+                "high": 101,
+                "low": 99,
+                "close": 100.5,
+                "volume": 1,
+                "symbol": "ESH4",
+            }
+        ],
+    )
+    schema = CSVSchema(
+        instrument="ES",
+        source_timezone="America/New_York",
+        contract_col="symbol",
+        provider="fixture",
+    )
+    result = CSVBarLoader(schema).load(path)
+    assert list(result)[0].contract == "ESH4"
+    assert result.report.contracts == ("ESH4",)
+    assert len(result.report.source_sha256) == 64
+
+
+def test_databento_raw_fixed_precision_prices_are_normalized(tmp_path):
+    path = _write_csv(
+        tmp_path,
+        [
+            {
+                "ts_event": 1_704_727_200_000_000_000,
+                "open": 5_000_000_000_000,
+                "high": 5_001_000_000_000,
+                "low": 4_999_000_000_000,
+                "close": 5_000_250_000_000,
+                "volume": 10,
+                "symbol": "ESH4",
+            }
+        ],
+    )
+    result = CSVBarLoader(CSVSchema.databento("ES")).load(path)
+    bar = list(result)[0]
+    assert bar.open == 5000
+    assert bar.close == 5000.25
+    assert bar.contract == "ESH4"

@@ -11,9 +11,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("csv", help="Path to a one-minute CSV export")
     parser.add_argument("instrument", choices=("ES", "NQ"))
-    parser.add_argument(
-        "--provider", choices=("databento", "firstrate"), required=True
-    )
+    parser.add_argument("--provider", choices=("databento", "firstrate"), required=True)
     parser.add_argument("--contract", help="Optional source contract label")
     return parser.parse_args()
 
@@ -21,9 +19,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     factory = (
-        CSVSchema.databento
-        if args.provider == "databento"
-        else CSVSchema.firstrate
+        CSVSchema.databento if args.provider == "databento" else CSVSchema.firstrate
     )
     schema = factory(args.instrument, contract=args.contract)
     loaded = CSVBarLoader(schema).load(args.csv)

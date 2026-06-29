@@ -10,6 +10,7 @@ from typing import Iterable, Iterator
 
 import pandas as pd
 
+from .calendar import DEFAULT_CME_CALENDAR
 from .levels import LiquidityLevelTracker
 from .models import (
     Bar,
@@ -122,9 +123,7 @@ class _WilderATR:
             if len(self._seed) == self.period:
                 self.value = sum(self._seed) / self.period
         else:
-            self.value = (
-                (self.value * (self.period - 1)) + true_range
-            ) / self.period
+            self.value = ((self.value * (self.period - 1)) + true_range) / self.period
         self._previous_close = bar.close
 
 
@@ -144,6 +143,7 @@ class SilverBulletStrategy:
         self.spec = INSTRUMENTS[symbol]
         self.config = config or SilverBulletConfig()
         self.level_tracker = level_tracker or LiquidityLevelTracker()
+        self.calendar = getattr(self.level_tracker, "calendar", DEFAULT_CME_CALENDAR)
         self._atr = _WilderATR(self.config.atr_period)
         self._features: deque[_FeatureBar] = deque(
             maxlen=max(5, self.config.pivot_width * 2 + 1)
@@ -173,7 +173,19 @@ class SilverBulletStrategy:
 
     def on_bar(self, bar: Bar) -> TradeSignal | None:
         self._validate_bar(bar)
+        discontinuity = (
+            self._last_timestamp is not None
+            and self.calendar.has_unexpected_gap(self._last_timestamp, bar.timestamp)
+        )
+        contract_changed = (
+            self._features
+            and self._features[-1].bar.contract is not None
+            and bar.contract is not None
+            and self._features[-1].bar.contract != bar.contract
+        )
         self.level_tracker.on_bar(bar)
+        if discontinuity or contract_changed:
+            self._reset_technical_state()
         feature = _FeatureBar(
             bar=bar,
             atr_before=self._atr.value,
@@ -244,6 +256,13 @@ class SilverBulletStrategy:
         self._completed.add(key)
         self._setup = None
         return signal
+
+    def _reset_technical_state(self) -> None:
+        self._atr = _WilderATR(self.config.atr_period)
+        self._features.clear()
+        self._latest_swing_high = None
+        self._latest_swing_low = None
+        self._setup = None
 
     def _validate_bar(self, bar: Bar) -> None:
         if bar.instrument.upper() != self.instrument:
@@ -319,9 +338,7 @@ class SilverBulletStrategy:
             )
         return None
 
-    def _is_displacement(
-        self, feature: _FeatureBar, direction: Direction
-    ) -> bool:
+    def _is_displacement(self, feature: _FeatureBar, direction: Direction) -> bool:
         bar = feature.bar
         if feature.atr_before is None:
             return False
@@ -397,6 +414,4 @@ class SilverBulletStrategy:
         _, current_key = self._session_for(current.bar.timestamp)
         if middle_key != setup.session_key or current_key != setup.session_key:
             return None
-        return self._detect_fvg(
-            first.bar, middle.bar, current.bar, setup.direction
-        )
+        return self._detect_fvg(first.bar, middle.bar, current.bar, setup.direction)

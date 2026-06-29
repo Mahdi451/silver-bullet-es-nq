@@ -8,6 +8,7 @@ from datetime import timedelta
 import pandas as pd
 
 from .models import Bar, LiquidityKind, LiquidityLevel, NEW_YORK
+from .calendar import CMECalendar, DEFAULT_CME_CALENDAR
 
 
 def trading_day(timestamp: pd.Timestamp):  # type: ignore[no-untyped-def]
@@ -50,8 +51,16 @@ class _MutableLevel:
 class LiquidityLevelTracker:
     """Calculate completed PDH/PDL/PWH/PWL levels one bar at a time."""
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        calendar: CMECalendar = DEFAULT_CME_CALENDAR,
+        *,
+        require_complete_periods: bool = True,
+    ) -> None:
+        self.calendar = calendar
+        self.require_complete_periods = require_complete_periods
         self._last_timestamp: pd.Timestamp | None = None
+        self._contract: str | None = None
         self._day_label = None
         self._day_high: float | None = None
         self._day_low: float | None = None
@@ -60,11 +69,30 @@ class LiquidityLevelTracker:
         self._week_low: float | None = None
         self._daily_levels: list[_MutableLevel] = []
         self._weekly_levels: list[_MutableLevel] = []
+        self._day_valid = False
+        self._week_valid = False
 
     def on_bar(self, bar: Bar) -> tuple[LiquidityLevel, ...]:
         self._validate_order(bar)
         day = trading_day(bar.timestamp)
         week = trading_week(bar.timestamp)
+
+        contract_changed = (
+            self._last_timestamp is not None
+            and self._contract is not None
+            and bar.contract is not None
+            and bar.contract != self._contract
+        )
+        unexpected_gap = (
+            self._last_timestamp is not None
+            and self.calendar.has_unexpected_gap(self._last_timestamp, bar.timestamp)
+        )
+        if (self.require_complete_periods and unexpected_gap) or contract_changed:
+            self._day_valid = False
+            self._week_valid = False
+        if contract_changed:
+            self._daily_levels = []
+            self._weekly_levels = []
 
         if self._day_label is None:
             self._start_periods(day, week, bar)
@@ -74,23 +102,24 @@ class LiquidityLevelTracker:
                 self._week_label = week
                 self._week_high = None
                 self._week_low = None
+                self._week_valid = self._starts_week(bar.timestamp)
             if day != self._day_label:
                 self._finalize_day(bar.timestamp)
                 self._day_label = day
                 self._day_high = None
                 self._day_low = None
+                self._day_valid = self._starts_day(bar.timestamp)
             self._accumulate(bar)
 
         self._mark_tapped(bar)
         self._last_timestamp = bar.timestamp
+        self._contract = bar.contract
         return self.levels()
 
     def levels(self, *, include_tapped: bool = True) -> tuple[LiquidityLevel, ...]:
         levels = self._daily_levels + self._weekly_levels
         return tuple(
-            level.snapshot()
-            for level in levels
-            if include_tapped or not level.tapped
+            level.snapshot() for level in levels if include_tapped or not level.tapped
         )
 
     def get(self, level_id: str) -> LiquidityLevel | None:
@@ -112,58 +141,86 @@ class LiquidityLevelTracker:
         self._day_low = bar.low
         self._week_high = bar.high
         self._week_low = bar.low
+        self._day_valid = self._starts_day(bar.timestamp)
+        self._week_valid = self._starts_week(bar.timestamp)
 
     def _accumulate(self, bar: Bar) -> None:
-        self._day_high = bar.high if self._day_high is None else max(self._day_high, bar.high)
-        self._day_low = bar.low if self._day_low is None else min(self._day_low, bar.low)
+        self._day_high = (
+            bar.high if self._day_high is None else max(self._day_high, bar.high)
+        )
+        self._day_low = (
+            bar.low if self._day_low is None else min(self._day_low, bar.low)
+        )
         self._week_high = (
             bar.high if self._week_high is None else max(self._week_high, bar.high)
         )
-        self._week_low = bar.low if self._week_low is None else min(self._week_low, bar.low)
+        self._week_low = (
+            bar.low if self._week_low is None else min(self._week_low, bar.low)
+        )
 
     def _finalize_day(self, available_from: pd.Timestamp) -> None:
         assert self._day_label is not None
         assert self._day_high is not None and self._day_low is not None
         period = self._day_label.isoformat()
-        self._daily_levels = [
-            _MutableLevel(
-                level_id=f"PDH:{period}",
-                kind=LiquidityKind.PDH,
-                price=self._day_high,
-                source_period=period,
-                available_from=available_from,
-            ),
-            _MutableLevel(
-                level_id=f"PDL:{period}",
-                kind=LiquidityKind.PDL,
-                price=self._day_low,
-                source_period=period,
-                available_from=available_from,
-            ),
-        ]
+        self._daily_levels = (
+            []
+            if not self._day_valid
+            else [
+                _MutableLevel(
+                    level_id=f"PDH:{period}",
+                    kind=LiquidityKind.PDH,
+                    price=self._day_high,
+                    source_period=period,
+                    available_from=available_from,
+                ),
+                _MutableLevel(
+                    level_id=f"PDL:{period}",
+                    kind=LiquidityKind.PDL,
+                    price=self._day_low,
+                    source_period=period,
+                    available_from=available_from,
+                ),
+            ]
+        )
 
     def _finalize_week(self, available_from: pd.Timestamp) -> None:
         assert self._week_label is not None
         assert self._week_high is not None and self._week_low is not None
         period = self._week_label.isoformat()
-        self._weekly_levels = [
-            _MutableLevel(
-                level_id=f"PWH:{period}",
-                kind=LiquidityKind.PWH,
-                price=self._week_high,
-                source_period=period,
-                available_from=available_from,
-            ),
-            _MutableLevel(
-                level_id=f"PWL:{period}",
-                kind=LiquidityKind.PWL,
-                price=self._week_low,
-                source_period=period,
-                available_from=available_from,
-            ),
-        ]
+        self._weekly_levels = (
+            []
+            if not self._week_valid
+            else [
+                _MutableLevel(
+                    level_id=f"PWH:{period}",
+                    kind=LiquidityKind.PWH,
+                    price=self._week_high,
+                    source_period=period,
+                    available_from=available_from,
+                ),
+                _MutableLevel(
+                    level_id=f"PWL:{period}",
+                    kind=LiquidityKind.PWL,
+                    price=self._week_low,
+                    source_period=period,
+                    available_from=available_from,
+                ),
+            ]
+        )
 
     def _mark_tapped(self, bar: Bar) -> None:
         for level in self._daily_levels + self._weekly_levels:
             if bar.low <= level.price <= bar.high:
                 level.tapped = True
+
+    def _starts_day(self, timestamp: pd.Timestamp) -> bool:
+        if not self.require_complete_periods:
+            return True
+        local = timestamp.tz_convert(NEW_YORK)
+        return local.hour == 18 and local.minute == 0
+
+    def _starts_week(self, timestamp: pd.Timestamp) -> bool:
+        if not self.require_complete_periods:
+            return True
+        local = timestamp.tz_convert(NEW_YORK)
+        return local.weekday() == 6 and local.hour == 18 and local.minute == 0

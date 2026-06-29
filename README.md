@@ -3,15 +3,14 @@
 An event-driven Python research foundation for testing a formalized ICT Silver
 Bullet strategy on one-minute ES and NQ futures data.
 
-This repository currently implements the two parts that must be trustworthy
-before a backtest can be meaningful:
+The repository now implements the complete research path:
 
 1. strict historical-data ingestion and dynamic liquidity levels;
-2. causal, testable strategy signals without future-data leakage.
+2. causal strategy signals without future-data leakage;
+3. deterministic fills, costs, trade management, and portfolio accounting;
+4. metrics, ledgers, tear-sheet artifacts, risk checks, and walk-forward tools.
 
-It does **not** place live trades or calculate a final equity curve yet. Trade
-execution, slippage, commissions, position management, drawdown analytics, and
-parameter optimization are intentionally reserved for the next phase.
+Live market data and broker order execution remain explicitly out of scope.
 
 > This is research software, not financial advice. Futures trading involves
 > substantial risk.
@@ -110,9 +109,14 @@ windows are explicit research extensions using the same state machine.
 ├── examples/scan_csv.py     Command-line CSV scanner
 ├── src/silver_bullet/
 │   ├── data.py              CSV schemas, validation, and quality reports
+│   ├── calendar.py          Globex sessions and closure exceptions
+│   ├── execution.py         Fills, costs, positions, trades, and accounting
+│   ├── analytics.py         Metrics, ledgers, and tear-sheet artifacts
+│   ├── optimization.py      Walk-forward parameter evaluation primitives
 │   ├── levels.py            Causal PDH/PDL/PWH/PWL tracking
 │   ├── models.py            Canonical bars, levels, FVGs, and signals
-│   └── strategy.py          Event-driven Silver Bullet state machine
+│   ├── strategy.py          Event-driven Silver Bullet state machine
+│   └── cli.py               Historical backtest command
 ├── tests/                   Data, level, and strategy behavior tests
 ├── pyproject.toml           Package and development dependencies
 └── Silver-Bullet-Strategy.pdf
@@ -141,8 +145,9 @@ Run verification:
 ## Historical data
 
 Each run accepts one prepared ES or NQ contract series, or one continuous series
-already prepared by the data provider. Version 1 does not stitch contracts or
-back-adjust prices.
+already prepared by the data provider. Contract changes reset technical state so
+patterns cannot span a rollover. The package does not synthesize or back-adjust
+prices.
 
 Every input must provide one-minute OHLCV data. The loader:
 
@@ -169,8 +174,10 @@ loaded = CSVBarLoader(schema).load("ESU4-1m.csv")
 print(loaded.report)
 ```
 
-The preset expects `ts_event`, `open`, `high`, `low`, `close`, and `volume`.
-Databento timestamps are interpreted as UTC.
+The preset expects `ts_event`, `open`, `high`, `low`, `close`, `volume`, and a
+mapped `symbol` unless a static contract is supplied. Databento timestamps are
+interpreted as UTC. Decimal (`pretty_px`) and raw fixed-precision prices are both
+normalized automatically.
 
 ### Firstrate-style CSV
 
@@ -239,6 +246,35 @@ The command-line example performs the same workflow:
   --contract ESU4
 ```
 
+## Run a complete backtest
+
+All-in per-side fees are required inputs. The baseline uses two contracts, one
+tick of adverse slippage on every fill, a 50/50 scale-out at five points,
+stop-first resolution when a bar touches both stop and target, and a 3:59 PM New
+York forced close.
+
+```bash
+.venv/bin/silver-bullet-backtest \
+  --data ES=path/to/ES.csv \
+  --data NQ=path/to/NQ.csv \
+  --fee ES=2.50 \
+  --fee NQ=2.50 \
+  --contract ES=ESU4 \
+  --contract NQ=NQU4 \
+  --provider databento \
+  --mode both \
+  --output backtest-results
+```
+
+Separate ES/NQ and combined-account directories contain trade, fill, equity,
+violation, and cancellation ledgers; metrics JSON; and an equity/drawdown chart.
+The fee values above are examples only, not recommended broker rates.
+The same run can be stored in `backtest.example.json` and launched with:
+
+```bash
+.venv/bin/silver-bullet-backtest --config backtest.example.json
+```
+
 ## Configuration
 
 The defaults are explicit and replaceable:
@@ -256,8 +292,8 @@ config = SilverBulletConfig(
 strategy = SilverBulletStrategy("NQ", config=config)
 ```
 
-ES and NQ both use a `0.25`-point tick. Their point values are defined as $50
-for ES and $20 for NQ for use by the future execution and analytics layer.
+ES and NQ both use a `0.25`-point tick. Their point values are $50 for ES and
+$20 for NQ.
 
 ## Test coverage
 
@@ -272,21 +308,20 @@ The automated suite covers:
 - all four session windows;
 - 10-point delivery filtering and weekly-level tie priority;
 - origin-swing invalidation and session-edge rejection;
-- next-minute signal timing and one-signal-per-session behavior.
+- next-minute signal timing and one-signal-per-session behavior;
+- off-tick rejection, contract metadata, and source checksums;
+- missing execution bars and end-to-end CSV-to-account behavior;
+- stop-first ambiguity, slippage, fees, scale-outs, DOL exits, and forced closes;
+- account reconciliation, artifact generation, and walk-forward grids.
 
 ## Current boundary and next phase
 
-The following are intentionally not implemented yet:
+Remaining acceptance work requires licensed external data:
 
-- order fills and intrabar stop/target precedence;
-- one-tick slippage per execution;
-- configurable broker, exchange, clearing, and regulatory fees;
-- contract sizing and account-level risk;
-- five-point partial profit-taking and final DOL exits;
-- the 3:59 PM forced close;
-- realized P&L, equity curves, maximum drawdown, and daily prop-firm drawdown;
-- session tear sheets and parameter optimization;
-- live data or order execution.
+- validate representative real Databento ES and NQ exports;
+- add the exact holiday and early-close dates required by each tested period;
+- benchmark multi-year files and add streaming ingestion if needed;
+- manually audit real accepted/rejected setups against charts;
+- define any provider-specific multi-contract stitching policy.
 
-Those items should be built on top of the emitted `TradeSignal` objects rather
-than mixed into the signal-detection state machine.
+Live data and broker order execution are not part of this backtesting project.

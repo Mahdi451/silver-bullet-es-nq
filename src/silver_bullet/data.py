@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import date, time, timedelta
+from hashlib import sha256
 from pathlib import Path
 from typing import Iterator
 
 import numpy as np
 import pandas as pd
 
+from .calendar import CMECalendar, DEFAULT_CME_CALENDAR
 from .models import Bar, INSTRUMENTS, NEW_YORK
 
 
@@ -33,6 +34,9 @@ class CSVSchema:
     close_col: str = "close"
     volume_col: str = "volume"
     contract: str | None = None
+    contract_col: str | None = None
+    provider: str = "custom"
+    price_divisor: float | None = 1.0
 
     def __post_init__(self) -> None:
         symbol = self.instrument.upper()
@@ -45,11 +49,13 @@ class CSVSchema:
             )
         if not self.source_timezone:
             raise ValueError("source_timezone is required for deterministic parsing")
+        if self.contract and self.contract_col:
+            raise ValueError("provide contract or contract_col, not both")
+        if self.price_divisor is not None and self.price_divisor <= 0:
+            raise ValueError("price_divisor must be positive")
 
     @classmethod
-    def databento(
-        cls, instrument: str, *, contract: str | None = None
-    ) -> "CSVSchema":
+    def databento(cls, instrument: str, *, contract: str | None = None) -> "CSVSchema":
         return cls(
             instrument=instrument,
             source_timezone="UTC",
@@ -60,12 +66,13 @@ class CSVSchema:
             close_col="close",
             volume_col="volume",
             contract=contract,
+            contract_col=None if contract else "symbol",
+            provider="databento",
+            price_divisor=None,
         )
 
     @classmethod
-    def firstrate(
-        cls, instrument: str, *, contract: str | None = None
-    ) -> "CSVSchema":
+    def firstrate(cls, instrument: str, *, contract: str | None = None) -> "CSVSchema":
         return cls(
             instrument=instrument,
             source_timezone=NEW_YORK,
@@ -78,6 +85,7 @@ class CSVSchema:
             close_col="Close",
             volume_col="Volume",
             contract=contract,
+            provider="firstrate",
         )
 
 
@@ -94,6 +102,9 @@ class DataQualityReport:
     start: pd.Timestamp | None
     end: pd.Timestamp | None
     missing_intervals: tuple[MissingInterval, ...] = field(default_factory=tuple)
+    source_sha256: str | None = None
+    provider: str = "custom"
+    contracts: tuple[str, ...] = field(default_factory=tuple)
 
     @property
     def missing_minutes(self) -> int:
@@ -126,10 +137,14 @@ class LoadResult:
 class CSVBarLoader:
     """Load and validate one prepared ES or NQ series per invocation."""
 
-    def __init__(self, schema: CSVSchema) -> None:
+    def __init__(
+        self, schema: CSVSchema, calendar: CMECalendar = DEFAULT_CME_CALENDAR
+    ) -> None:
         self.schema = schema
+        self.calendar = calendar
 
     def load(self, path: str | Path) -> LoadResult:
+        path = Path(path)
         source = pd.read_csv(path)
         timestamp = self._parse_timestamp(source)
         mapping = {
@@ -147,14 +162,29 @@ class CSVBarLoader:
         frame.insert(0, "timestamp", timestamp)
         if self.schema.contract is not None:
             frame["contract"] = self.schema.contract
+        elif self.schema.contract_col:
+            if self.schema.contract_col not in source.columns:
+                raise DataValidationError(
+                    f"missing contract column: {self.schema.contract_col}"
+                )
+            frame["contract"] = source[self.schema.contract_col].astype(str)
         frame = frame.sort_values("timestamp", kind="stable").reset_index(drop=True)
+        self._normalize_prices(frame)
         self._validate(frame)
-        intervals = _find_missing_intervals(frame["timestamp"])
+        intervals = _find_missing_intervals(frame["timestamp"], self.calendar)
+        contracts = (
+            tuple(frame["contract"].dropna().astype(str).unique())
+            if "contract" in frame
+            else ()
+        )
         report = DataQualityReport(
             rows=len(frame),
             start=None if frame.empty else frame.iloc[0]["timestamp"],
             end=None if frame.empty else frame.iloc[-1]["timestamp"],
             missing_intervals=tuple(intervals),
+            source_sha256=sha256(path.read_bytes()).hexdigest(),
+            provider=self.schema.provider,
+            contracts=contracts,
         )
         return LoadResult(
             frame=frame,
@@ -201,6 +231,19 @@ class CSVBarLoader:
             raise DataValidationError(f"invalid timestamp data: {exc}") from exc
         return localized.rename("timestamp")
 
+    def _normalize_prices(self, frame: pd.DataFrame) -> None:
+        columns = ["open", "high", "low", "close"]
+        try:
+            frame[columns] = frame[columns].apply(pd.to_numeric, errors="raise")
+        except (TypeError, ValueError) as exc:
+            raise DataValidationError(f"price columns must be numeric: {exc}") from exc
+        divisor = self.schema.price_divisor
+        if divisor is None:
+            median = float(np.nanmedian(np.abs(frame[columns].to_numpy(dtype=float))))
+            divisor = 1_000_000_000.0 if median > 100_000_000 else 1.0
+        if divisor != 1.0:
+            frame[columns] = frame[columns] / divisor
+
     @staticmethod
     def _validate(frame: pd.DataFrame) -> None:
         if frame.empty:
@@ -210,14 +253,12 @@ class CSVBarLoader:
             duplicates = timestamps[timestamps.duplicated(keep=False)].unique()
             raise DataValidationError(f"duplicate timestamps: {list(duplicates[:5])}")
         if any(
-            (
-                ts.second != 0
-                or ts.microsecond != 0
-                or getattr(ts, "nanosecond", 0) != 0
-            )
+            (ts.second != 0 or ts.microsecond != 0 or getattr(ts, "nanosecond", 0) != 0)
             for ts in timestamps
         ):
-            raise DataValidationError("timestamps must align to exact minute boundaries")
+            raise DataValidationError(
+                "timestamps must align to exact minute boundaries"
+            )
 
         numeric = ["open", "high", "low", "close", "volume"]
         try:
@@ -228,66 +269,27 @@ class CSVBarLoader:
             raise DataValidationError("OHLCV values must be finite")
         if (frame["volume"] < 0).any():
             raise DataValidationError("volume cannot be negative")
-        invalid = (
-            (frame["high"] < frame[["open", "low", "close"]].max(axis=1))
-            | (frame["low"] > frame[["open", "high", "close"]].min(axis=1))
+        tick = INSTRUMENTS["ES"].tick_size
+        prices = frame[["open", "high", "low", "close"]].to_numpy(dtype=float)
+        if not np.allclose(prices / tick, np.round(prices / tick), atol=1e-8):
+            raise DataValidationError("prices must align to the 0.25-point tick grid")
+        invalid = (frame["high"] < frame[["open", "low", "close"]].max(axis=1)) | (
+            frame["low"] > frame[["open", "high", "close"]].min(axis=1)
         )
         if invalid.any():
             rows = list(frame.index[invalid][:5])
             raise DataValidationError(f"invalid OHLC relationships at rows: {rows}")
 
 
-def _globex_intervals(day: date) -> tuple[tuple[time, time], ...]:
-    weekday = day.weekday()
-    if weekday == 6:  # Sunday evening
-        return ((time(18, 0), time.max),)
-    if weekday <= 3:  # Monday through Thursday
-        return ((time.min, time(17, 0)), (time(18, 0), time.max))
-    if weekday == 4:  # Friday until the close
-        return ((time.min, time(17, 0)),)
-    return ()
-
-
-def _expected_minutes_in_gap(
-    start: pd.Timestamp, end: pd.Timestamp
-) -> tuple[pd.Timestamp | None, pd.Timestamp | None, int]:
-    if start > end:
-        return None, None, 0
-    current_day = start.date()
-    final_day = end.date()
-    first: pd.Timestamp | None = None
-    last: pd.Timestamp | None = None
-    count = 0
-    while current_day <= final_day:
-        for open_time, close_time in _globex_intervals(current_day):
-            opened = pd.Timestamp.combine(current_day, open_time).tz_localize(NEW_YORK)
-            if close_time == time.max:
-                closed = pd.Timestamp.combine(
-                    current_day + timedelta(days=1), time.min
-                ).tz_localize(NEW_YORK)
-            else:
-                closed = pd.Timestamp.combine(current_day, close_time).tz_localize(
-                    NEW_YORK
-                )
-            left = max(start, opened)
-            right_exclusive = min(end + pd.Timedelta(minutes=1), closed)
-            if left < right_exclusive:
-                minutes = int((right_exclusive - left) / pd.Timedelta(minutes=1))
-                count += minutes
-                first = left if first is None else min(first, left)
-                interval_last = right_exclusive - pd.Timedelta(minutes=1)
-                last = interval_last if last is None else max(last, interval_last)
-        current_day += timedelta(days=1)
-    return first, last, count
-
-
-def _find_missing_intervals(timestamps: pd.Series) -> list[MissingInterval]:
+def _find_missing_intervals(
+    timestamps: pd.Series, calendar: CMECalendar = DEFAULT_CME_CALENDAR
+) -> list[MissingInterval]:
     result: list[MissingInterval] = []
     values = list(timestamps)
     for previous, current in zip(values, values[1:]):
         if current - previous <= pd.Timedelta(minutes=1):
             continue
-        first, last, count = _expected_minutes_in_gap(
+        first, last, count = calendar.expected_minutes(
             previous + pd.Timedelta(minutes=1),
             current - pd.Timedelta(minutes=1),
         )

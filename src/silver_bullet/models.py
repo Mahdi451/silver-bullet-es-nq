@@ -40,6 +40,7 @@ class Bar:
     volume: float
     contract: str | None = None
 
+
 @runtime_checkable
 class BarSource(Protocol):
     """Input boundary shared by CSV history and future live feeds."""

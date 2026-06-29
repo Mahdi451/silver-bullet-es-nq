@@ -1,0 +1,19 @@
+{
+  "data": {
+    "ES": "path/to/ES.csv",
+    "NQ": "path/to/NQ.csv"
+  },
+  "fees": {
+    "ES": 2.5,
+    "NQ": 2.5
+  },
+  "contracts": {
+    "ES": "ESU4",
+    "NQ": "NQU4"
+  },
+  "provider": "databento",
+  "starting_balance": 100000,
+  "quantity": 2,
+  "mode": "both",
+  "output": "backtest-results"
+}

@@ -8,6 +8,21 @@ from .data import (
     LoadResult,
     MissingInterval,
 )
+from .calendar import CMECalendar, DEFAULT_CME_CALENDAR
+from .analytics import TearSheetBuilder, calculate_metrics, result_frames
+from .execution import (
+    BacktestConfig,
+    BacktestEngine,
+    BacktestResult,
+    CostModel,
+    EquityPoint,
+    Fill,
+    FillReason,
+    RiskLimits,
+    RiskViolation,
+    Side,
+    Trade,
+)
 from .levels import LiquidityLevelTracker, trading_day, trading_week
 from .models import (
     Bar,
@@ -27,17 +42,30 @@ from .strategy import (
     SilverBulletStrategy,
     StrategyStage,
 )
+from .optimization import (
+    OptimizationRecord,
+    OptimizationRunner,
+    WalkForwardSplit,
+    parameter_combinations,
+)
 
 __all__ = [
     "Bar",
     "BarSource",
+    "BacktestConfig",
+    "BacktestEngine",
+    "BacktestResult",
+    "CMECalendar",
     "CSVBarLoader",
     "CSVSchema",
     "DEFAULT_SESSIONS",
     "DataQualityReport",
     "DataValidationError",
+    "DEFAULT_CME_CALENDAR",
     "Direction",
     "FairValueGap",
+    "Fill",
+    "FillReason",
     "INSTRUMENTS",
     "InstrumentSpec",
     "LiquidityKind",
@@ -45,11 +73,24 @@ __all__ = [
     "LiquidityLevelTracker",
     "LoadResult",
     "MissingInterval",
+    "OptimizationRecord",
+    "OptimizationRunner",
+    "CostModel",
+    "EquityPoint",
+    "RiskLimits",
+    "RiskViolation",
     "SessionWindow",
     "SilverBulletConfig",
     "SilverBulletStrategy",
     "StrategyStage",
+    "Side",
+    "TearSheetBuilder",
+    "Trade",
     "TradeSignal",
     "trading_day",
     "trading_week",
+    "WalkForwardSplit",
+    "calculate_metrics",
+    "parameter_combinations",
+    "result_frames",
 ]

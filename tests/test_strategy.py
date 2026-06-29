@@ -183,3 +183,14 @@ def test_rejects_second_fvg_when_next_open_is_outside_session():
 def test_minimum_delivery_filter_rejects_too_close_target():
     strategy = _strategy([_level(LiquidityKind.PDH, 107.5)])
     assert list(strategy.scan(_long_bars())) == []
+
+
+def test_missing_minute_breaks_pattern_sequence():
+    bars = _long_bars()
+    bars[6] = _bar("2024-01-08 10:02", 100.5, 106.5, 100.25, 106)
+    for index in range(7, len(bars)):
+        bars[index] = replace(
+            bars[index], timestamp=bars[index].timestamp + pd.Timedelta(minutes=1)
+        )
+    strategy = _strategy([_level(LiquidityKind.PDH, 120)])
+    assert list(strategy.scan(bars)) == []
