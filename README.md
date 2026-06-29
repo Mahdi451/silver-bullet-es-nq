@@ -39,7 +39,7 @@ untapped levels, active session windows, and bullish or bearish fair value gaps.
 ## Strategy formalization
 
 The implementation follows the included
-[original strategy document](<Silver Bullet.Abdulsamad's Strategy.docx>) while
+[original strategy document](Silver-Bullet-Strategy.pdf) while
 turning its discretionary language into deterministic rules.
 
 ### Liquidity targets
@@ -115,7 +115,7 @@ windows are explicit research extensions using the same state machine.
 │   └── strategy.py          Event-driven Silver Bullet state machine
 ├── tests/                   Data, level, and strategy behavior tests
 ├── pyproject.toml           Package and development dependencies
-└── Silver Bullet.Abdulsamad's Strategy.docx
+└── Silver-Bullet-Strategy.pdf
 ```
 
 The strategy consumes canonical `Bar` events through a `BarSource` boundary.
