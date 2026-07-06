@@ -33,6 +33,20 @@ behind explicit boundaries: Unusual Whales can provide SPY/QQQ equity-options
 context for signal gating, and Alpaca can preview or submit mapped proxy orders
 after the gate passes.
 
+### Presentation blueprints
+
+These phase-labeled blueprint visuals are intended for slides and roadmap
+discussions. They include planned Phase 2 and Phase 3 components, so read them
+with the current-status comparison in
+[`docs/project-status-vs-template.md`](docs/project-status-vs-template.md).
+
+| Blueprint | Focus |
+| --- | --- |
+| [`event-driven-system-architecture.png`](docs/images/blueprints/event-driven-system-architecture.png) | End-to-end event-driven loop with phase labels |
+| [`strategy-sequence-diagram.png`](docs/images/blueprints/strategy-sequence-diagram.png) | Silver Bullet state-shift sequence across session windows |
+| [`headless-command-center.png`](docs/images/blueprints/headless-command-center.png) | Planned headless M4 operator dashboard |
+| [`multi-broker-execution-logic.png`](docs/images/blueprints/multi-broker-execution-logic.png) | Decoupled data ingress and execution routing |
+
 ### Indicator overview
 
 ![Silver Bullet indicator overview](docs/images/silver-bullet-indicator-overview.svg)
@@ -66,6 +80,42 @@ credentials and tests never call live services.
 The important operating boundary is that Alpaca is not treated as a direct ES/NQ
 futures broker. Accepted ES signals map to configurable proxy symbols such as
 `SPY`, and accepted NQ signals map to configurable proxy symbols such as `QQQ`.
+
+For a detailed comparison against the target automated execution template, see
+[`docs/project-status-vs-template.md`](docs/project-status-vs-template.md). For
+the slide narrative, see
+[`docs/presentation-outline.md`](docs/presentation-outline.md).
+
+### Status at a glance
+
+| Capability | Current status | Notes |
+| --- | --- | --- |
+| ES/NQ historical backtesting | Implemented | Uses prepared one-minute futures data and deterministic strategy/execution rules. |
+| Zero-look-ahead signal generation | Implemented | Liquidity levels, ATR, pivots, and FVG state are calculated causally from completed bars. |
+| Simulated fills and account accounting | Implemented | Includes fees, slippage, stops, scale-outs, DOL exits, forced closes, equity, and risk violations. |
+| Unusual Whales integration | Boundary implemented | Current adapter normalizes option-flow alerts into context scores; full proxy-data ingestion is future work. |
+| Alpaca execution | Boundary implemented | Supports guarded proxy preview/submission; options chain selection and full order sync are not implemented yet. |
+| Options execution profiles | Documented roadmap | Policy is documented, but contract selection and multi-leg routing are future modules. |
+| Live WebSocket ingestion | Planned | Belongs to Phase 2 paper-forward testing. |
+| Headless command center | Planned | Presentation/dashboard concept for operator monitoring. |
+| Live futures broker routing | Planned | Phase 3 only, after a broker API and safety model are selected. |
+
+### Documentation map
+
+| Document | Purpose |
+| --- | --- |
+| [`docs/project-status-vs-template.md`](docs/project-status-vs-template.md) | Compares the repository to the target automated trading-engine presentation template. |
+| [`docs/options-execution.md`](docs/options-execution.md) | Defines the three preferred options execution profiles and required selection filters. |
+| [`docs/future-options-module.md`](docs/future-options-module.md) | Plans a later provider-neutral options selection module. |
+| [`docs/presentation-outline.md`](docs/presentation-outline.md) | Provides a structured 10-slide presentation narrative and speaker notes. |
+
+### Phase roadmap
+
+| Phase | Focus | Outcome |
+| --- | --- | --- |
+| Phase 1 | Research core and provider boundaries | Current state: repeatable ES/NQ backtests, context scoring boundary, and Alpaca proxy boundary. |
+| Phase 2 | Paper trading and options proxy execution | Add live/proxy data ingestion, options chain selection, paper account reconciliation, order-state sync, and operator logs. |
+| Phase 3 | Direct futures deployment | Add selected futures broker routing, live ES/NQ feed handling, production monitoring, and account-level live risk controls. |
 
 ## Strategy formalization
 
@@ -137,7 +187,8 @@ windows are explicit research extensions using the same state machine.
 
 ```text
 .
-├── docs/images/             Versioned SVG diagrams
+├── docs/                    Roadmaps, presentation outline, and visual assets
+├── docs/images/             Versioned SVG and PNG diagrams
 ├── examples/scan_csv.py     Command-line CSV scanner
 ├── src/silver_bullet/
 │   ├── data.py              CSV schemas, validation, and quality reports
@@ -367,6 +418,32 @@ the executor with `AlpacaProxyExecutor.from_environment()`. It reads
 `ALPACA_API_KEY`, `ALPACA_SECRET_KEY`, and `ALPACA_PAPER`; non-dry-run submission
 requires `enabled=True`, and live mode additionally requires `allow_live=True`.
 
+## Options execution roadmap
+
+Accepted Silver Bullet signals can eventually route into an options engine, but
+the current repository does not yet select option contracts or submit live
+options orders. The intended options layer should preserve the futures signal's
+direction, target, stop geometry, and short expected holding time.
+
+Generic low-delta OTM contracts are not the default. They can destroy expectancy
+through fast theta decay, low price sensitivity, wide spreads, and poor fill
+quality. The preferred profiles are:
+
+| Profile | Contract shape | Best use |
+| --- | --- | --- |
+| High-delta short-dated long contracts | Buy ITM or high-ATM calls/puts, delta `0.65` to `0.75`, `0DTE` or `1DTE` | Closest options proxy for a futures-like directional scalp. |
+| Target-defined vertical debit spreads | Buy ATM and sell the strike nearest the DOL target | Risk-defined expression when the liquidity target maps cleanly to a liquid strike. |
+| 0DTE momentum scalp | Buy slightly OTM delta `0.40` contracts | Aggressive convexity profile for Macro Open or NY AM when expected delivery is at least 10 index points. |
+
+A future options selector should reject candidates with stale signals, wide
+spreads, low liquidity, excessive premium, incompatible expiry, or poor
+DOL-to-strike mapping. It should return order candidates first; broker-specific
+order construction should remain a separate execution step.
+
+See [`docs/options-execution.md`](docs/options-execution.md) for the execution
+policy and [`docs/future-options-module.md`](docs/future-options-module.md) for
+the later implementation plan.
+
 ## Configuration
 
 The defaults are explicit and replaceable:
@@ -420,7 +497,8 @@ The automated suite covers:
 
 ## Current boundary and next phase
 
-Remaining acceptance work requires licensed external data:
+Remaining acceptance work requires licensed external data and paper-account
+validation:
 
 - validate representative real Databento ES and NQ exports;
 - add the exact holiday and early-close dates required by each tested period;
@@ -428,5 +506,13 @@ Remaining acceptance work requires licensed external data:
 - manually audit real accepted/rejected setups against charts;
 - define any provider-specific multi-contract stitching policy;
 - empirically validate Unusual Whales context filters against futures setups;
-- paper-test Alpaca proxy execution, reconciliation, and kill-switch behavior
-  before considering live proxy trading.
+- design and test a provider-neutral options contract selector;
+- paper-test Alpaca proxy execution, order-state reconciliation, and kill-switch
+  behavior before considering live proxy trading;
+- choose a futures broker API before any Phase 3 ES/NQ live-routing work.
+
+The core engineering rule is to keep strategy detection, context gating,
+contract selection, and broker execution decoupled. That lets the same
+state-machine signal be replayed historically, previewed through dry-run proxy
+orders, paper-tested, and eventually routed live without rewriting the strategy
+logic.
