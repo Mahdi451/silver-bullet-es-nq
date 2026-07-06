@@ -15,5 +15,37 @@
   "starting_balance": 100000,
   "quantity": 2,
   "mode": "both",
+  "context_gate": {
+    "proxy_symbols": {
+      "ES": "SPY",
+      "NQ": "QQQ"
+    },
+    "max_context_age_minutes": 15,
+    "min_aligned_score": 0.55,
+    "min_score_edge": 0.05,
+    "allow_missing_context": false
+  },
+  "unusual_whales": {
+    "enabled": false,
+    "api_key_env": "UNUSUAL_WHALES_API_KEY",
+    "min_premium": 50000,
+    "limit": 100
+  },
+  "alpaca_proxy": {
+    "enabled": false,
+    "paper": true,
+    "api_key_env": "ALPACA_API_KEY",
+    "secret_key_env": "ALPACA_SECRET_KEY",
+    "proxy_symbols": {
+      "ES": "SPY",
+      "NQ": "QQQ"
+    },
+    "quantity_by_proxy": {
+      "SPY": 1,
+      "QQQ": 1
+    },
+    "max_signal_age_minutes": 2,
+    "max_notional_per_order": 1000
+  },
   "output": "backtest-results"
 }

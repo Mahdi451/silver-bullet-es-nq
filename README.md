@@ -8,32 +8,64 @@ The repository now implements the complete research path:
 1. strict historical-data ingestion and dynamic liquidity levels;
 2. causal strategy signals without future-data leakage;
 3. deterministic fills, costs, trade management, and portfolio accounting;
-4. metrics, ledgers, tear-sheet artifacts, risk checks, and walk-forward tools.
+4. metrics, ledgers, tear-sheet artifacts, risk checks, and walk-forward tools;
+5. optional external context gating and paper-first proxy execution boundaries.
 
-Live market data and broker order execution remain explicitly out of scope.
+Direct ES/NQ futures brokerage remains out of scope. The current live-facing path
+uses Unusual Whales as an equity/options context filter and Alpaca as an optional
+paper-first proxy execution adapter for mapped instruments such as SPY and QQQ.
 
 > This is research software, not financial advice. Futures trading involves
 > substantial risk.
 
 ## Visual guide
 
-These generated illustrations show the intended chart presentation. They are
-concept diagrams, not screenshots produced by the Python package.
+These illustrations are versioned concept diagrams, not screenshots produced by
+the Python package.
+
+### Project state and integrations
+
+![Silver Bullet project state and integration flow](docs/images/project-state-flow.svg)
+
+The current implementation is research-first. CSV history flows through the
+deterministic ES/NQ strategy and backtest engine. External services are isolated
+behind explicit boundaries: Unusual Whales can provide SPY/QQQ equity-options
+context for signal gating, and Alpaca can preview or submit mapped proxy orders
+after the gate passes.
 
 ### Indicator overview
 
-![Silver Bullet indicator overview](docs/images/silver-bullet-indicator-overview.png)
+![Silver Bullet indicator overview](docs/images/silver-bullet-indicator-overview.svg)
 
 The indicator view distinguishes prior-day and prior-week liquidity, tapped and
 untapped levels, active session windows, and bullish or bearish fair value gaps.
 
 ### Bullish setup
 
-![Bullish Silver Bullet setup](docs/images/silver-bullet-bullish-setup.png)
+![Bullish Silver Bullet setup](docs/images/silver-bullet-bullish-setup.svg)
 
 ### Bearish setup
 
-![Bearish Silver Bullet setup](docs/images/silver-bullet-bearish-setup.png)
+![Bearish Silver Bullet setup](docs/images/silver-bullet-bearish-setup.svg)
+
+## Current project state
+
+The project now has three layers with clear ownership:
+
+| Layer | Status | Primary files |
+| --- | --- | --- |
+| Historical research engine | Implemented and tested | `data.py`, `levels.py`, `strategy.py`, `execution.py`, `analytics.py`, `optimization.py` |
+| External context gate | Implemented as provider-neutral boundary plus Unusual Whales adapter | `context.py`, `unusual_whales.py` |
+| Proxy execution | Implemented as guarded Alpaca preview/submission boundary | `alpaca.py` |
+
+The strategy layer remains pure futures research. It consumes canonical `Bar`
+events and emits `TradeSignal` objects. The new context and proxy execution
+layers are optional post-signal steps, so research runs do not require external
+credentials and tests never call live services.
+
+The important operating boundary is that Alpaca is not treated as a direct ES/NQ
+futures broker. Accepted ES signals map to configurable proxy symbols such as
+`SPY`, and accepted NQ signals map to configurable proxy symbols such as `QQQ`.
 
 ## Strategy formalization
 
@@ -105,19 +137,22 @@ windows are explicit research extensions using the same state machine.
 
 ```text
 .
-├── docs/images/             Generated setup illustrations
+├── docs/images/             Versioned SVG diagrams
 ├── examples/scan_csv.py     Command-line CSV scanner
 ├── src/silver_bullet/
 │   ├── data.py              CSV schemas, validation, and quality reports
 │   ├── calendar.py          Globex sessions and closure exceptions
+│   ├── context.py           Provider-neutral external signal gating
 │   ├── execution.py         Fills, costs, positions, trades, and accounting
 │   ├── analytics.py         Metrics, ledgers, and tear-sheet artifacts
 │   ├── optimization.py      Walk-forward parameter evaluation primitives
+│   ├── unusual_whales.py    Unusual Whales REST context adapter
+│   ├── alpaca.py            Alpaca proxy execution adapter
 │   ├── levels.py            Causal PDH/PDL/PWH/PWL tracking
 │   ├── models.py            Canonical bars, levels, FVGs, and signals
 │   ├── strategy.py          Event-driven Silver Bullet state machine
 │   └── cli.py               Historical backtest command
-├── tests/                   Data, level, and strategy behavior tests
+├── tests/                   Data, strategy, execution, context, and adapter tests
 ├── pyproject.toml           Package and development dependencies
 └── Silver-Bullet-Strategy.pdf
 ```
@@ -125,6 +160,11 @@ windows are explicit research extensions using the same state machine.
 The strategy consumes canonical `Bar` events through a `BarSource` boundary.
 CSV parsing is kept outside the strategy, so a future database or websocket feed
 can implement the same interface without changing signal logic.
+
+External context and broker execution are also kept outside the strategy. The
+strategy emits `TradeSignal`; a `SignalContextGate` may accept or reject it using
+normalized context, and an `AlpacaProxyExecutor` may preview or submit a mapped
+proxy order only after that signal has passed the gate.
 
 ## Installation
 
@@ -246,6 +286,35 @@ The command-line example performs the same workflow:
   --contract ESU4
 ```
 
+## Gate signals with Unusual Whales context
+
+The strategy's futures signal can be filtered by equity/options context without
+changing the Silver Bullet state machine. The default mapping treats ES context as
+SPY flow and NQ context as QQQ flow.
+
+```python
+from silver_bullet import (
+    SignalContextGate,
+    UnusualWhalesClient,
+    UnusualWhalesConfig,
+)
+
+client = UnusualWhalesClient(UnusualWhalesConfig.from_environment())
+gate = SignalContextGate()
+
+context = client.context_for_signal(signal, proxy_symbol="SPY", min_premium=50_000)
+decision = gate.evaluate(signal, context)
+
+if decision.accepted:
+    print("signal passed context gate")
+else:
+    print("rejected:", decision.reason)
+```
+
+`UNUSUAL_WHALES_API_KEY` is read from the environment. The first implementation
+normalizes Unusual Whales option-flow alerts into bullish and bearish premium
+scores, then rejects missing, stale, mismatched, weak, or conflicting context.
+
 ## Run a complete backtest
 
 All-in per-side fees are required inputs. The baseline uses two contracts, one
@@ -275,6 +344,29 @@ The same run can be stored in `backtest.example.json` and launched with:
 .venv/bin/silver-bullet-backtest --config backtest.example.json
 ```
 
+## Preview Alpaca proxy orders
+
+Alpaca does not execute ES/NQ futures in this project. Accepted futures-derived
+signals can instead be mapped to configured proxy instruments, defaulting to SPY
+for ES and QQQ for NQ. Submission is disabled by default; use dry-runs and paper
+trading first.
+
+```python
+from silver_bullet import AlpacaProxyConfig, AlpacaProxyExecutor
+
+executor = AlpacaProxyExecutor(
+    AlpacaProxyConfig(enabled=False, paper=True)
+)
+preview = executor.preview_order(signal, as_of=signal.signal_time)
+
+print(preview.proxy_symbol, preview.side, preview.quantity)
+```
+
+For real Alpaca paper submission, install Alpaca's official Python SDK and create
+the executor with `AlpacaProxyExecutor.from_environment()`. It reads
+`ALPACA_API_KEY`, `ALPACA_SECRET_KEY`, and `ALPACA_PAPER`; non-dry-run submission
+requires `enabled=True`, and live mode additionally requires `allow_live=True`.
+
 ## Configuration
 
 The defaults are explicit and replaceable:
@@ -295,6 +387,16 @@ strategy = SilverBulletStrategy("NQ", config=config)
 ES and NQ both use a `0.25`-point tick. Their point values are $50 for ES and
 $20 for NQ.
 
+`backtest.example.json` also documents optional integration settings for the new
+phase:
+
+- `context_gate` configures proxy symbol mapping, freshness, and score
+  thresholds;
+- `unusual_whales` documents the API key environment variable and flow-alert
+  filters;
+- `alpaca_proxy` documents paper mode, proxy quantities, notional limits, and
+  credential environment variables.
+
 ## Test coverage
 
 The automated suite covers:
@@ -312,7 +414,9 @@ The automated suite covers:
 - off-tick rejection, contract metadata, and source checksums;
 - missing execution bars and end-to-end CSV-to-account behavior;
 - stop-first ambiguity, slippage, fees, scale-outs, DOL exits, and forced closes;
-- account reconciliation, artifact generation, and walk-forward grids.
+- account reconciliation, artifact generation, and walk-forward grids;
+- context-gate decisions, Unusual Whales normalization, and Alpaca proxy safety
+  checks.
 
 ## Current boundary and next phase
 
@@ -322,6 +426,7 @@ Remaining acceptance work requires licensed external data:
 - add the exact holiday and early-close dates required by each tested period;
 - benchmark multi-year files and add streaming ingestion if needed;
 - manually audit real accepted/rejected setups against charts;
-- define any provider-specific multi-contract stitching policy.
-
-Live data and broker order execution are not part of this backtesting project.
+- define any provider-specific multi-contract stitching policy;
+- empirically validate Unusual Whales context filters against futures setups;
+- paper-test Alpaca proxy execution, reconciliation, and kill-switch behavior
+  before considering live proxy trading.

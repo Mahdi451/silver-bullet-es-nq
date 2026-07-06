@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="500" viewBox="0 0 1100 500" role="img" aria-labelledby="title desc">
+  <title id="title">Bullish Silver Bullet setup</title>
+  <desc id="desc">Bullish setup concept showing displacement toward upside liquidity, first FVG, mitigation, second FVG, next-minute entry, stop, scale out, and target.</desc>
+  <rect width="1100" height="500" fill="#0b1220"/>
+  <rect x="60" y="52" width="980" height="380" rx="22" fill="#111827" stroke="#334155" stroke-width="2"/>
+  <text x="84" y="94" fill="#f8fafc" font-family="Arial, sans-serif" font-size="28" font-weight="700">Bullish Setup Sequence</text>
+  <text x="84" y="124" fill="#94a3b8" font-family="Arial, sans-serif" font-size="16">Target upside liquidity, confirm displacement, wait for mitigation, trigger on the second bullish FVG</text>
+
+  <line x1="100" y1="150" x2="990" y2="150" stroke="#38bdf8" stroke-width="3" stroke-dasharray="10 8"/>
+  <text x="844" y="138" fill="#7dd3fc" font-family="Arial, sans-serif" font-size="15" font-weight="700">Upside DOL target</text>
+  <line x1="100" y1="350" x2="990" y2="350" stroke="#ef4444" stroke-width="3" stroke-dasharray="10 8"/>
+  <text x="845" y="374" fill="#fecaca" font-family="Arial, sans-serif" font-size="15" font-weight="700">Stop beyond origin swing</text>
+
+  <polyline points="110,320 170,306 230,330 290,292 350,315 410,255 470,210 530,235 590,282 650,258 710,215 770,190 830,168 900,150" fill="none" stroke="#e2e8f0" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="410" cy="255" r="8" fill="#22c55e"/>
+  <circle cx="590" cy="282" r="8" fill="#f59e0b"/>
+  <circle cx="710" cy="215" r="8" fill="#22c55e"/>
+  <circle cx="770" cy="190" r="8" fill="#a78bfa"/>
+
+  <rect x="390" y="232" width="96" height="42" rx="9" fill="#16a34a" opacity="0.35" stroke="#22c55e"/>
+  <text x="401" y="258" fill="#bbf7d0" font-family="Arial, sans-serif" font-size="13" font-weight="700">First FVG</text>
+  <rect x="676" y="228" width="100" height="42" rx="9" fill="#16a34a" opacity="0.35" stroke="#22c55e"/>
+  <text x="686" y="254" fill="#bbf7d0" font-family="Arial, sans-serif" font-size="13" font-weight="700">Second FVG</text>
+
+  <path d="M410 255 C430 190 476 175 530 210" fill="none" stroke="#22c55e" stroke-width="3" marker-end="url(#green-arrow)"/>
+  <text x="360" y="178" fill="#bbf7d0" font-family="Arial, sans-serif" font-size="14" font-weight="700">1. Displacement</text>
+  <path d="M530 235 C558 278 574 292 590 282" fill="none" stroke="#f59e0b" stroke-width="3" marker-end="url(#orange-arrow)"/>
+  <text x="510" y="322" fill="#fde68a" font-family="Arial, sans-serif" font-size="14" font-weight="700">2. Mitigation</text>
+  <path d="M710 215 C728 198 748 190 770 190" fill="none" stroke="#a78bfa" stroke-width="3" marker-end="url(#purple-arrow)"/>
+  <text x="690" y="178" fill="#ddd6fe" font-family="Arial, sans-serif" font-size="14" font-weight="700">3. Entry next open</text>
+
+  <rect x="95" y="446" width="265" height="34" rx="17" fill="#1e293b" stroke="#334155"/>
+  <text x="118" y="468" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="14">Scale out: +5 points, 50 percent</text>
+  <rect x="392" y="446" width="265" height="34" rx="17" fill="#1e293b" stroke="#334155"/>
+  <text x="414" y="468" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="14">Final exit: selected liquidity target</text>
+  <rect x="690" y="446" width="315" height="34" rx="17" fill="#1e293b" stroke="#334155"/>
+  <text x="712" y="468" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="14">Invalidation: target tapped, stop crossed, or session ends</text>
+
+  <defs>
+    <marker id="green-arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#22c55e"/>
+    </marker>
+    <marker id="orange-arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#f59e0b"/>
+    </marker>
+    <marker id="purple-arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#a78bfa"/>
+    </marker>
+  </defs>
+</svg>
