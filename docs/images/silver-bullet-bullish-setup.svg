@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
-  <title id="title">Bullish Silver Bullet setup</title>
-  <desc id="desc">Minimal bullish setup chart with upside target, stop, two fair value gaps, and entry marker.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680" role="img" aria-labelledby="title desc">
+  <title id="title">Bullish Silver Bullet setup with entry, stop, scale-out, and DOL exit</title>
+  <desc id="desc">Bullish ES concept chart showing displacement, two fair value gaps, next-minute entry, one-tick-beyond stop, 50 percent scale-out at five points, and PDH draw-on-liquidity target with at least ten points of delivery.</desc>
   <defs>
     <style>
       .bg{fill:#0b1120}
@@ -13,54 +13,100 @@
       .down{fill:#ef4444}
       .text{fill:#f8fafc;font-family:Arial,sans-serif}
       .muted{fill:#94a3b8;font-family:Arial,sans-serif}
+      .label{fill:#cbd5e1;font-family:Arial,sans-serif}
+      .plan{fill:#0f172a;stroke:#334155;stroke-width:1.5}
+      .planText{fill:#e2e8f0;font-family:Arial,sans-serif;font-size:12}
+      .planMuted{fill:#94a3b8;font-family:Arial,sans-serif;font-size:11}
     </style>
+    <marker id="arrowUp" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+      <path d="M0,8 L4,0 L8,8 Z" fill="#38bdf8"/>
+    </marker>
   </defs>
-  <rect width="1200" height="560" class="bg"/>
-  <rect x="70" y="54" width="1060" height="430" rx="24" class="panel"/>
-  <rect x="70" y="54" width="1060" height="52" rx="24" class="header"/>
-  <text x="98" y="87" class="text" font-size="18" font-weight="700">Bullish Silver Bullet Setup</text>
-  <text x="1098" y="87" class="muted" font-size="13" text-anchor="end">target above, stop below</text>
+
+  <rect width="1200" height="680" class="bg"/>
+  <rect x="56" y="48" width="1088" height="584" rx="24" class="panel"/>
+  <rect x="56" y="48" width="1088" height="52" rx="24" class="header"/>
+  <text x="84" y="81" class="text" font-size="18" font-weight="700">Bullish Silver Bullet Setup</text>
+  <text x="1120" y="81" class="muted" font-size="13" text-anchor="end">ES example · NY AM session</text>
 
   <g>
-    <line x1="112" y1="165" x2="1056" y2="165" class="grid"/>
-    <line x1="112" y1="245" x2="1056" y2="245" class="grid"/>
-    <line x1="112" y1="325" x2="1056" y2="325" class="grid"/>
-    <line x1="112" y1="405" x2="1056" y2="405" class="grid"/>
-    <line x1="112" y1="125" x2="112" y2="442" class="axis"/>
-    <line x1="112" y1="442" x2="1056" y2="442" class="axis"/>
+    <line x1="96" y1="150" x2="820" y2="150" class="grid"/>
+    <line x1="96" y1="220" x2="820" y2="220" class="grid"/>
+    <line x1="96" y1="290" x2="820" y2="290" class="grid"/>
+    <line x1="96" y1="360" x2="820" y2="360" class="grid"/>
+    <line x1="96" y1="430" x2="820" y2="430" class="grid"/>
+    <line x1="96" y1="120" x2="96" y2="470" class="axis"/>
+    <line x1="96" y1="470" x2="820" y2="470" class="axis"/>
   </g>
 
   <g stroke-dasharray="8 7" stroke-width="2">
-    <line x1="112" y1="150" x2="1056" y2="150" stroke="#38bdf8"/>
-    <line x1="112" y1="412" x2="1056" y2="412" stroke="#ef4444"/>
+    <line x1="96" y1="132" x2="820" y2="132" stroke="#38bdf8"/>
+    <line x1="96" y1="188" x2="820" y2="188" stroke="#a78bfa"/>
+    <line x1="96" y1="214" x2="820" y2="214" stroke="#fbbf24"/>
+    <line x1="96" y1="388" x2="820" y2="388" stroke="#64748b"/>
+    <line x1="96" y1="404" x2="820" y2="404" stroke="#ef4444"/>
   </g>
-  <rect x="985" y="128" width="94" height="30" rx="8" fill="#0e7490"/>
-  <text x="1032" y="148" fill="#ecfeff" font-family="Arial,sans-serif" font-size="12" font-weight="700" text-anchor="middle">TARGET</text>
-  <rect x="985" y="390" width="94" height="30" rx="8" fill="#991b1b"/>
-  <text x="1032" y="410" fill="#fee2e2" font-family="Arial,sans-serif" font-size="12" font-weight="700" text-anchor="middle">STOP</text>
+
+  <rect x="828" y="118" width="118" height="28" rx="7" fill="#0e7490"/>
+  <text x="887" y="137" fill="#ecfeff" font-family="Arial,sans-serif" font-size="11" font-weight="700" text-anchor="middle">TARGET PDH</text>
+  <text x="887" y="124" fill="#7dd3fc" font-family="Arial,sans-serif" font-size="11" text-anchor="middle">5305.00</text>
+
+  <rect x="828" y="174" width="118" height="28" rx="7" fill="#5b21b6"/>
+  <text x="887" y="193" fill="#ede9fe" font-family="Arial,sans-serif" font-size="11" font-weight="700" text-anchor="middle">SCALE-OUT 50%</text>
+  <text x="887" y="180" fill="#c4b5fd" font-family="Arial,sans-serif" font-size="11" text-anchor="middle">5297.00 (+5)</text>
+
+  <rect x="828" y="200" width="118" height="28" rx="7" fill="#713f12"/>
+  <text x="887" y="219" fill="#fef3c7" font-family="Arial,sans-serif" font-size="11" font-weight="700" text-anchor="middle">ENTRY</text>
+  <text x="887" y="206" fill="#fde68a" font-family="Arial,sans-serif" font-size="11" text-anchor="middle">5292.00 next 1m</text>
+
+  <rect x="828" y="374" width="118" height="28" rx="7" fill="#334155"/>
+  <text x="887" y="393" fill="#e2e8f0" font-family="Arial,sans-serif" font-size="11" font-weight="700" text-anchor="middle">ORIGIN SWING</text>
+  <text x="887" y="380" fill="#cbd5e1" font-family="Arial,sans-serif" font-size="11" text-anchor="middle">5285.00</text>
+
+  <rect x="828" y="390" width="118" height="28" rx="7" fill="#991b1b"/>
+  <text x="887" y="409" fill="#fee2e2" font-family="Arial,sans-serif" font-size="11" font-weight="700" text-anchor="middle">STOP</text>
+  <text x="887" y="396" fill="#fecaca" font-family="Arial,sans-serif" font-size="11" text-anchor="middle">5284.75 (-1 tick)</text>
 
   <g>
-    <line x1="170" y1="352" x2="170" y2="414" class="wick"/><rect x="160" y="372" width="20" height="26" rx="3" class="down"/>
-    <line x1="230" y1="330" x2="230" y2="392" class="wick"/><rect x="220" y="350" width="20" height="28" rx="3" class="up"/>
-    <line x1="290" y1="338" x2="290" y2="406" class="wick"/><rect x="280" y="356" width="20" height="32" rx="3" class="down"/>
-    <line x1="350" y1="310" x2="350" y2="376" class="wick"/><rect x="340" y="330" width="20" height="28" rx="3" class="up"/>
-    <line x1="410" y1="286" x2="410" y2="354" class="wick"/><rect x="400" y="304" width="20" height="34" rx="3" class="up"/>
-    <line x1="470" y1="226" x2="470" y2="330" class="wick"/><rect x="460" y="248" width="20" height="58" rx="3" class="up"/>
-    <line x1="530" y1="204" x2="530" y2="292" class="wick"/><rect x="520" y="226" width="20" height="42" rx="3" class="up"/>
-    <line x1="590" y1="246" x2="590" y2="332" class="wick"/><rect x="580" y="268" width="20" height="40" rx="3" class="down"/>
-    <line x1="650" y1="226" x2="650" y2="312" class="wick"/><rect x="640" y="250" width="20" height="38" rx="3" class="up"/>
-    <line x1="710" y1="194" x2="710" y2="272" class="wick"/><rect x="700" y="214" width="20" height="38" rx="3" class="up"/>
-    <line x1="770" y1="174" x2="770" y2="246" class="wick"/><rect x="760" y="192" width="20" height="36" rx="3" class="up"/>
-    <line x1="830" y1="156" x2="830" y2="226" class="wick"/><rect x="820" y="176" width="20" height="32" rx="3" class="up"/>
+    <line x1="150" y1="360" x2="150" y2="418" class="wick"/><rect x="140" y="378" width="20" height="26" rx="3" class="down"/>
+    <line x1="210" y1="338" x2="210" y2="398" class="wick"/><rect x="200" y="356" width="20" height="28" rx="3" class="up"/>
+    <line x1="270" y1="346" x2="270" y2="412" class="wick"/><rect x="260" y="364" width="20" height="32" rx="3" class="down"/>
+    <line x1="330" y1="318" x2="330" y2="384" class="wick"/><rect x="320" y="336" width="20" height="30" rx="3" class="up"/>
+    <line x1="390" y1="292" x2="390" y2="360" class="wick"/><rect x="380" y="310" width="20" height="34" rx="3" class="up"/>
+    <line x1="450" y1="232" x2="450" y2="336" class="wick"/><rect x="440" y="254" width="20" height="58" rx="3" class="up"/>
+    <line x1="510" y1="210" x2="510" y2="298" class="wick"/><rect x="500" y="232" width="20" height="42" rx="3" class="up"/>
+    <line x1="570" y1="252" x2="570" y2="338" class="wick"/><rect x="560" y="274" width="20" height="40" rx="3" class="down"/>
+    <line x1="630" y1="232" x2="630" y2="318" class="wick"/><rect x="620" y="256" width="20" height="38" rx="3" class="up"/>
+    <line x1="690" y1="200" x2="690" y2="278" class="wick"/><rect x="680" y="220" width="20" height="38" rx="3" class="up"/>
+    <line x1="750" y1="180" x2="750" y2="252" class="wick"/><rect x="740" y="198" width="20" height="36" rx="3" class="up"/>
   </g>
 
-  <rect x="456" y="306" width="98" height="34" rx="8" fill="#16a34a" opacity="0.22" stroke="#22c55e" stroke-width="1.5"/>
-  <text x="505" y="363" fill="#86efac" font-family="Arial,sans-serif" font-size="12" font-weight="700" text-anchor="middle">FVG 1</text>
-  <rect x="638" y="286" width="98" height="34" rx="8" fill="#16a34a" opacity="0.22" stroke="#22c55e" stroke-width="1.5"/>
-  <text x="687" y="343" fill="#86efac" font-family="Arial,sans-serif" font-size="12" font-weight="700" text-anchor="middle">FVG 2</text>
+  <rect x="430" y="312" width="98" height="34" rx="8" fill="#16a34a" opacity="0.22" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="479" y="369" fill="#86efac" font-family="Arial,sans-serif" font-size="12" font-weight="700" text-anchor="middle">FVG 1</text>
+  <text x="479" y="383" fill="#86efac" font-family="Arial,sans-serif" font-size="10" text-anchor="middle">mitigated</text>
 
-  <line x1="742" y1="205" x2="742" y2="412" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4 6"/>
-  <circle cx="742" cy="205" r="7" fill="#fbbf24"/>
-  <rect x="758" y="188" width="72" height="32" rx="8" fill="#713f12"/>
-  <text x="794" y="209" fill="#fef3c7" font-family="Arial,sans-serif" font-size="12" font-weight="700" text-anchor="middle">ENTRY</text>
+  <rect x="612" y="292" width="98" height="34" rx="8" fill="#16a34a" opacity="0.22" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="661" y="349" fill="#86efac" font-family="Arial,sans-serif" font-size="12" font-weight="700" text-anchor="middle">FVG 2</text>
+  <text x="661" y="363" fill="#86efac" font-family="Arial,sans-serif" font-size="10" text-anchor="middle">entry trigger</text>
+
+  <rect x="444" y="248" width="30" height="58" rx="4" fill="#22c55e" opacity="0.18" stroke="#22c55e"/>
+  <text x="479" y="240" fill="#86efac" font-family="Arial,sans-serif" font-size="11" font-weight="700" text-anchor="middle">displacement</text>
+
+  <circle cx="722" cy="214" r="7" fill="#fbbf24"/>
+  <line x1="722" y1="214" x2="722" y2="404" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4 6"/>
+
+  <path d="M722 214 L722 188 L800 188" fill="none" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrowUp)"/>
+  <text x="804" y="192" fill="#7dd3fc" font-family="Arial,sans-serif" font-size="11" font-weight="700">+13 pts to DOL</text>
+
+  <rect x="96" y="500" width="700" height="108" rx="16" class="plan"/>
+  <text x="118" y="526" class="text" font-size="14" font-weight="700">Trade plan</text>
+  <text x="118" y="548" class="planText">1. Target untapped PDH with at least 10 points of delivery from the origin swing.</text>
+  <text x="118" y="568" class="planText">2. Enter long at the next 1-minute open after FVG 2 forms inside the session.</text>
+  <text x="118" y="588" class="planText">3. Stop at origin swing minus one tick. Scale out 50% at +5 points. Exit remainder at PDH or forced 3:59 PM close.</text>
+
+  <rect x="820" y="500" width="300" height="108" rx="16" class="plan"/>
+  <text x="842" y="526" class="text" font-size="14" font-weight="700">Levels</text>
+  <text x="842" y="548" class="planMuted">Delivery</text><text x="980" y="548" class="planText">13.0 pts (meets 10 pt minimum)</text>
+  <text x="842" y="568" class="planMuted">Risk</text><text x="980" y="568" class="planText">7.25 pts entry to stop</text>
+  <text x="842" y="588" class="planMuted">Reward</text><text x="980" y="588" class="planText">13.0 pts to PDH DOL</text>
 </svg>
