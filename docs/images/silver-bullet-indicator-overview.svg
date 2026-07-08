@@ -1,106 +1,67 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680" role="img" aria-labelledby="title desc">
-  <title id="title">TradingView-style Silver Bullet chart overview</title>
-  <desc id="desc">Clean candlestick chart showing prior liquidity levels, a session window, fair value gaps, and a signal path.</desc>
-  <rect width="1200" height="680" fill="#0f172a"/>
-  <rect x="64" y="54" width="1018" height="526" rx="18" fill="#111827" stroke="#243244"/>
-  <rect x="64" y="54" width="1018" height="44" rx="18" fill="#151f2e"/>
-  <text x="86" y="82" fill="#e5e7eb" font-family="Arial, sans-serif" font-size="17" font-weight="700">ES1! Silver Bullet Research - 1m</text>
-  <text x="980" y="82" fill="#94a3b8" font-family="Arial, sans-serif" font-size="13" text-anchor="end">New York session</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
+  <title id="title">Silver Bullet indicator overview</title>
+  <desc id="desc">Minimal chart showing liquidity levels, the active session window, two fair value gaps, and the signal point.</desc>
+  <defs>
+    <style>
+      .bg{fill:#0b1120}
+      .panel{fill:#111827;stroke:#243244;stroke-width:1.5}
+      .header{fill:#151f2e}
+      .grid{stroke:#223047;stroke-width:1}
+      .axis{stroke:#334155;stroke-width:1.5}
+      .wick{stroke:#64748b;stroke-width:2;stroke-linecap:round}
+      .up{fill:#22c55e}
+      .down{fill:#ef4444}
+      .text{fill:#f8fafc;font-family:Arial,sans-serif}
+      .muted{fill:#94a3b8;font-family:Arial,sans-serif}
+      .label{fill:#cbd5e1;font-family:Arial,sans-serif}
+    </style>
+  </defs>
+  <rect width="1200" height="560" class="bg"/>
+  <rect x="70" y="54" width="1060" height="430" rx="24" class="panel"/>
+  <rect x="70" y="54" width="1060" height="52" rx="24" class="header"/>
+  <text x="98" y="87" class="text" font-size="18" font-weight="700">Silver Bullet Indicator</text>
+  <text x="1098" y="87" class="muted" font-size="13" text-anchor="end">clean concept view</text>
 
-  <g stroke="#1f2a3a" stroke-width="1">
-    <line x1="96" y1="138" x2="1038" y2="138"/>
-    <line x1="96" y1="198" x2="1038" y2="198"/>
-    <line x1="96" y1="258" x2="1038" y2="258"/>
-    <line x1="96" y1="318" x2="1038" y2="318"/>
-    <line x1="96" y1="378" x2="1038" y2="378"/>
-    <line x1="96" y1="438" x2="1038" y2="438"/>
-    <line x1="96" y1="498" x2="1038" y2="498"/>
-    <line x1="188" y1="118" x2="188" y2="520"/>
-    <line x1="280" y1="118" x2="280" y2="520"/>
-    <line x1="372" y1="118" x2="372" y2="520"/>
-    <line x1="464" y1="118" x2="464" y2="520"/>
-    <line x1="556" y1="118" x2="556" y2="520"/>
-    <line x1="648" y1="118" x2="648" y2="520"/>
-    <line x1="740" y1="118" x2="740" y2="520"/>
-    <line x1="832" y1="118" x2="832" y2="520"/>
-    <line x1="924" y1="118" x2="924" y2="520"/>
+  <g>
+    <line x1="112" y1="165" x2="1056" y2="165" class="grid"/>
+    <line x1="112" y1="245" x2="1056" y2="245" class="grid"/>
+    <line x1="112" y1="325" x2="1056" y2="325" class="grid"/>
+    <line x1="112" y1="405" x2="1056" y2="405" class="grid"/>
+    <line x1="112" y1="125" x2="112" y2="442" class="axis"/>
+    <line x1="112" y1="442" x2="1056" y2="442" class="axis"/>
   </g>
 
-  <rect x="522" y="118" width="276" height="402" fill="#1e293b" opacity="0.34"/>
-  <text x="540" y="144" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="13">NY AM Silver Bullet window</text>
+  <rect x="470" y="125" width="315" height="317" rx="14" fill="#1e293b" opacity="0.32"/>
+  <text x="492" y="153" class="label" font-size="13">active session</text>
 
-  <g stroke-width="2" stroke-dasharray="8 7">
-    <line x1="96" y1="164" x2="1038" y2="164" stroke="#38bdf8"/>
-    <line x1="96" y1="458" x2="1038" y2="458" stroke="#38bdf8"/>
+  <g stroke-dasharray="8 7" stroke-width="2">
+    <line x1="112" y1="158" x2="1056" y2="158" stroke="#38bdf8"/>
+    <line x1="112" y1="402" x2="1056" y2="402" stroke="#38bdf8"/>
   </g>
-  <rect x="1040" y="151" width="58" height="24" rx="4" fill="#0e7490"/>
-  <text x="1069" y="168" fill="#ecfeff" font-family="Arial, sans-serif" font-size="12" text-anchor="middle">PDH</text>
-  <rect x="1040" y="445" width="58" height="24" rx="4" fill="#0e7490"/>
-  <text x="1069" y="462" fill="#ecfeff" font-family="Arial, sans-serif" font-size="12" text-anchor="middle">PDL</text>
+  <rect x="996" y="136" width="96" height="30" rx="8" fill="#0e7490"/>
+  <text x="1044" y="156" fill="#ecfeff" font-family="Arial,sans-serif" font-size="12" font-weight="700" text-anchor="middle">PDH / PWH</text>
+  <rect x="996" y="380" width="96" height="30" rx="8" fill="#0e7490"/>
+  <text x="1044" y="400" fill="#ecfeff" font-family="Arial,sans-serif" font-size="12" font-weight="700" text-anchor="middle">PDL / PWL</text>
 
-  <g font-family="Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="end">
-    <text x="1126" y="142">5310.00</text>
-    <text x="1126" y="202">5305.00</text>
-    <text x="1126" y="262">5300.00</text>
-    <text x="1126" y="322">5295.00</text>
-    <text x="1126" y="382">5290.00</text>
-    <text x="1126" y="442">5285.00</text>
-    <text x="1126" y="502">5280.00</text>
-  </g>
-  <g font-family="Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle">
-    <text x="188" y="548">09:52</text>
-    <text x="372" y="548">09:58</text>
-    <text x="556" y="548">10:04</text>
-    <text x="740" y="548">10:10</text>
-    <text x="924" y="548">10:16</text>
+  <g>
+    <line x1="170" y1="328" x2="170" y2="386" class="wick"/><rect x="160" y="344" width="20" height="28" rx="3" class="down"/>
+    <line x1="230" y1="306" x2="230" y2="368" class="wick"/><rect x="220" y="326" width="20" height="26" rx="3" class="up"/>
+    <line x1="290" y1="286" x2="290" y2="356" class="wick"/><rect x="280" y="306" width="20" height="34" rx="3" class="up"/>
+    <line x1="350" y1="302" x2="350" y2="372" class="wick"/><rect x="340" y="322" width="20" height="30" rx="3" class="down"/>
+    <line x1="410" y1="274" x2="410" y2="348" class="wick"/><rect x="400" y="292" width="20" height="40" rx="3" class="up"/>
+    <line x1="470" y1="222" x2="470" y2="324" class="wick"/><rect x="460" y="244" width="20" height="58" rx="3" class="up"/>
+    <line x1="530" y1="198" x2="530" y2="282" class="wick"/><rect x="520" y="218" width="20" height="42" rx="3" class="up"/>
+    <line x1="590" y1="226" x2="590" y2="304" class="wick"/><rect x="580" y="244" width="20" height="38" rx="3" class="down"/>
+    <line x1="650" y1="244" x2="650" y2="328" class="wick"/><rect x="640" y="264" width="20" height="40" rx="3" class="down"/>
+    <line x1="710" y1="214" x2="710" y2="294" class="wick"/><rect x="700" y="234" width="20" height="38" rx="3" class="up"/>
+    <line x1="770" y1="184" x2="770" y2="260" class="wick"/><rect x="760" y="202" width="20" height="40" rx="3" class="up"/>
+    <line x1="830" y1="166" x2="830" y2="236" class="wick"/><rect x="820" y="184" width="20" height="34" rx="3" class="up"/>
   </g>
 
-  <g stroke-linecap="round">
-    <line x1="130" y1="355" x2="130" y2="405" stroke="#64748b"/><rect x="122" y="370" width="16" height="21" rx="2" fill="#ef4444"/>
-    <line x1="164" y1="338" x2="164" y2="388" stroke="#64748b"/><rect x="156" y="352" width="16" height="22" rx="2" fill="#22c55e"/>
-    <line x1="198" y1="330" x2="198" y2="382" stroke="#64748b"/><rect x="190" y="348" width="16" height="18" rx="2" fill="#ef4444"/>
-    <line x1="232" y1="318" x2="232" y2="366" stroke="#64748b"/><rect x="224" y="332" width="16" height="20" rx="2" fill="#22c55e"/>
-    <line x1="266" y1="326" x2="266" y2="382" stroke="#64748b"/><rect x="258" y="342" width="16" height="24" rx="2" fill="#ef4444"/>
-    <line x1="300" y1="306" x2="300" y2="360" stroke="#64748b"/><rect x="292" y="320" width="16" height="25" rx="2" fill="#22c55e"/>
-    <line x1="334" y1="292" x2="334" y2="344" stroke="#64748b"/><rect x="326" y="306" width="16" height="24" rx="2" fill="#22c55e"/>
-    <line x1="368" y1="300" x2="368" y2="356" stroke="#64748b"/><rect x="360" y="318" width="16" height="21" rx="2" fill="#ef4444"/>
-    <line x1="402" y1="284" x2="402" y2="342" stroke="#64748b"/><rect x="394" y="300" width="16" height="26" rx="2" fill="#22c55e"/>
-    <line x1="436" y1="270" x2="436" y2="328" stroke="#64748b"/><rect x="428" y="286" width="16" height="26" rx="2" fill="#22c55e"/>
-    <line x1="470" y1="256" x2="470" y2="322" stroke="#64748b"/><rect x="462" y="276" width="16" height="28" rx="2" fill="#ef4444"/>
-    <line x1="504" y1="246" x2="504" y2="318" stroke="#64748b"/><rect x="496" y="260" width="16" height="38" rx="2" fill="#22c55e"/>
-    <line x1="538" y1="206" x2="538" y2="292" stroke="#64748b"/><rect x="530" y="220" width="16" height="58" rx="2" fill="#22c55e"/>
-    <line x1="572" y1="184" x2="572" y2="248" stroke="#64748b"/><rect x="564" y="198" width="16" height="34" rx="2" fill="#22c55e"/>
-    <line x1="606" y1="194" x2="606" y2="272" stroke="#64748b"/><rect x="598" y="218" width="16" height="32" rx="2" fill="#ef4444"/>
-    <line x1="640" y1="220" x2="640" y2="298" stroke="#64748b"/><rect x="632" y="238" width="16" height="36" rx="2" fill="#ef4444"/>
-    <line x1="674" y1="206" x2="674" y2="286" stroke="#64748b"/><rect x="666" y="230" width="16" height="32" rx="2" fill="#22c55e"/>
-    <line x1="708" y1="196" x2="708" y2="266" stroke="#64748b"/><rect x="700" y="214" width="16" height="33" rx="2" fill="#22c55e"/>
-    <line x1="742" y1="174" x2="742" y2="238" stroke="#64748b"/><rect x="734" y="188" width="16" height="34" rx="2" fill="#22c55e"/>
-    <line x1="776" y1="160" x2="776" y2="220" stroke="#64748b"/><rect x="768" y="176" width="16" height="26" rx="2" fill="#22c55e"/>
-    <line x1="810" y1="166" x2="810" y2="232" stroke="#64748b"/><rect x="802" y="186" width="16" height="30" rx="2" fill="#ef4444"/>
-    <line x1="844" y1="150" x2="844" y2="210" stroke="#64748b"/><rect x="836" y="166" width="16" height="30" rx="2" fill="#22c55e"/>
-    <line x1="878" y1="140" x2="878" y2="198" stroke="#64748b"/><rect x="870" y="156" width="16" height="26" rx="2" fill="#22c55e"/>
-    <line x1="912" y1="148" x2="912" y2="210" stroke="#64748b"/><rect x="904" y="166" width="16" height="26" rx="2" fill="#ef4444"/>
-    <line x1="946" y1="136" x2="946" y2="194" stroke="#64748b"/><rect x="938" y="150" width="16" height="28" rx="2" fill="#22c55e"/>
-  </g>
-
-  <rect x="512" y="280" width="80" height="34" rx="5" fill="#16a34a" opacity="0.24" stroke="#22c55e"/>
-  <rect x="706" y="226" width="78" height="34" rx="5" fill="#16a34a" opacity="0.24" stroke="#22c55e"/>
-  <text x="552" y="337" fill="#86efac" font-family="Arial, sans-serif" font-size="12" text-anchor="middle">first FVG</text>
-  <text x="745" y="283" fill="#86efac" font-family="Arial, sans-serif" font-size="12" text-anchor="middle">second FVG</text>
-  <circle cx="790" cy="182" r="5" fill="#fbbf24"/>
-  <text x="805" y="187" fill="#fde68a" font-family="Arial, sans-serif" font-size="13">signal</text>
-
-  <g opacity="0.65">
-    <rect x="122" y="535" width="16" height="22" fill="#ef4444"/>
-    <rect x="156" y="530" width="16" height="27" fill="#22c55e"/>
-    <rect x="190" y="540" width="16" height="17" fill="#ef4444"/>
-    <rect x="224" y="526" width="16" height="31" fill="#22c55e"/>
-    <rect x="258" y="538" width="16" height="19" fill="#ef4444"/>
-    <rect x="292" y="518" width="16" height="39" fill="#22c55e"/>
-    <rect x="530" y="500" width="16" height="57" fill="#22c55e"/>
-    <rect x="564" y="512" width="16" height="45" fill="#22c55e"/>
-    <rect x="632" y="522" width="16" height="35" fill="#ef4444"/>
-    <rect x="734" y="506" width="16" height="51" fill="#22c55e"/>
-    <rect x="870" y="520" width="16" height="37" fill="#22c55e"/>
-  </g>
+  <rect x="456" y="304" width="98" height="34" rx="8" fill="#16a34a" opacity="0.22" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="505" y="363" fill="#86efac" font-family="Arial,sans-serif" font-size="12" font-weight="700" text-anchor="middle">FVG 1</text>
+  <rect x="698" y="244" width="98" height="34" rx="8" fill="#16a34a" opacity="0.22" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="747" y="303" fill="#86efac" font-family="Arial,sans-serif" font-size="12" font-weight="700" text-anchor="middle">FVG 2</text>
+  <circle cx="812" cy="184" r="7" fill="#fbbf24"/>
+  <text x="832" y="189" fill="#fde68a" font-family="Arial,sans-serif" font-size="13" font-weight="700">Signal</text>
 </svg>

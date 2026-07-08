@@ -1,56 +1,58 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="470" viewBox="0 0 1100 470" role="img" aria-labelledby="title desc">
-  <title id="title">Silver Bullet project state and integration flow</title>
-  <desc id="desc">Architecture diagram showing CSV bars flowing into the strategy, Unusual Whales context gating accepted signals, and Alpaca proxy execution after safety checks.</desc>
-  <rect width="1100" height="470" fill="#0b1220"/>
-  <text x="62" y="66" fill="#f8fafc" font-family="Arial, sans-serif" font-size="30" font-weight="700">Current Project State</text>
-  <text x="62" y="98" fill="#94a3b8" font-family="Arial, sans-serif" font-size="16">Research-first ES/NQ engine with optional context gating and paper-first proxy execution</text>
-
-  <rect x="58" y="145" width="190" height="110" rx="18" fill="#111827" stroke="#38bdf8" stroke-width="2"/>
-  <text x="86" y="186" fill="#f8fafc" font-family="Arial, sans-serif" font-size="18" font-weight="700">Historical Bars</text>
-  <text x="86" y="214" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="14">Databento / Firstrate</text>
-  <text x="86" y="236" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="14">strict OHLCV loader</text>
-
-  <rect x="304" y="145" width="190" height="110" rx="18" fill="#111827" stroke="#22c55e" stroke-width="2"/>
-  <text x="338" y="186" fill="#f8fafc" font-family="Arial, sans-serif" font-size="18" font-weight="700">Strategy Core</text>
-  <text x="338" y="214" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="14">PDH / PDL / PWH / PWL</text>
-  <text x="338" y="236" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="14">FVG sequence scanner</text>
-
-  <rect x="550" y="145" width="190" height="110" rx="18" fill="#111827" stroke="#a78bfa" stroke-width="2"/>
-  <text x="578" y="186" fill="#f8fafc" font-family="Arial, sans-serif" font-size="18" font-weight="700">TradeSignal</text>
-  <text x="578" y="214" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="14">entry intention</text>
-  <text x="578" y="236" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="14">target, stop, session</text>
-
-  <rect x="796" y="145" width="240" height="110" rx="18" fill="#111827" stroke="#f59e0b" stroke-width="2"/>
-  <text x="824" y="186" fill="#f8fafc" font-family="Arial, sans-serif" font-size="18" font-weight="700">Unusual Whales Gate</text>
-  <text x="824" y="214" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="14">SPY / QQQ context</text>
-  <text x="824" y="236" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="14">flow bias, freshness, conflicts</text>
-
-  <rect x="304" y="315" width="190" height="92" rx="18" fill="#111827" stroke="#64748b" stroke-width="2"/>
-  <text x="334" y="353" fill="#f8fafc" font-family="Arial, sans-serif" font-size="18" font-weight="700">Backtest Outputs</text>
-  <text x="334" y="381" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="14">metrics, ledgers, charts</text>
-
-  <rect x="550" y="315" width="190" height="92" rx="18" fill="#111827" stroke="#64748b" stroke-width="2"/>
-  <text x="578" y="353" fill="#f8fafc" font-family="Arial, sans-serif" font-size="18" font-weight="700">Dry-Run Preview</text>
-  <text x="578" y="381" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="14">mapped proxy order</text>
-
-  <rect x="796" y="315" width="240" height="92" rx="18" fill="#111827" stroke="#ef4444" stroke-width="2"/>
-  <text x="824" y="353" fill="#f8fafc" font-family="Arial, sans-serif" font-size="18" font-weight="700">Alpaca Proxy Adapter</text>
-  <text x="824" y="381" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="14">paper-first, guarded submission</text>
-
-  <path d="M248 200 H304" stroke="#cbd5e1" stroke-width="3" marker-end="url(#arrow)"/>
-  <path d="M494 200 H550" stroke="#cbd5e1" stroke-width="3" marker-end="url(#arrow)"/>
-  <path d="M740 200 H796" stroke="#cbd5e1" stroke-width="3" marker-end="url(#arrow)"/>
-  <path d="M645 255 V315" stroke="#cbd5e1" stroke-width="3" marker-end="url(#arrow)"/>
-  <path d="M916 255 V315" stroke="#cbd5e1" stroke-width="3" marker-end="url(#arrow)"/>
-  <path d="M399 255 V315" stroke="#cbd5e1" stroke-width="3" marker-end="url(#arrow)"/>
-  <path d="M740 361 H796" stroke="#cbd5e1" stroke-width="3" marker-end="url(#arrow)"/>
-
-  <text x="785" y="121" fill="#fbbf24" font-family="Arial, sans-serif" font-size="14" font-weight="700">new integration boundary</text>
-  <text x="790" y="286" fill="#fecaca" font-family="Arial, sans-serif" font-size="14" font-weight="700">no direct ES/NQ futures brokerage</text>
-
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="360" viewBox="0 0 1100 360" role="img" aria-labelledby="title desc">
+  <title id="title">Silver Bullet research flow</title>
+  <desc id="desc">Concise architecture flow from historical data to strategy, signal, context gate, and paper-first proxy preview.</desc>
   <defs>
     <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
-      <path d="M0,0 L0,6 L9,3 z" fill="#cbd5e1"/>
+      <path d="M0,0 L0,6 L9,3 z" fill="#94a3b8"/>
     </marker>
+    <style>
+      .bg{fill:#0b1120}
+      .panel{fill:#111827;stroke:#243244;stroke-width:1.5}
+      .box{fill:#0f172a;stroke:#334155;stroke-width:1.5}
+      .muted{fill:#94a3b8;font-family:Arial,sans-serif}
+      .text{fill:#f8fafc;font-family:Arial,sans-serif}
+      .small{fill:#cbd5e1;font-family:Arial,sans-serif}
+      .accent{stroke:#38bdf8}
+      .ok{stroke:#22c55e}
+      .gate{stroke:#f59e0b}
+    </style>
   </defs>
+  <rect width="1100" height="360" class="bg"/>
+  <rect x="44" y="42" width="1012" height="268" rx="28" class="panel"/>
+
+  <text x="76" y="90" class="text" font-size="30" font-weight="700">Current Project State</text>
+  <text x="76" y="120" class="muted" font-size="15">Research core first. External context and execution stay behind explicit boundaries.</text>
+
+  <g>
+    <rect x="76" y="165" width="150" height="86" rx="18" class="box accent"/>
+    <text x="151" y="199" class="text" font-size="17" font-weight="700" text-anchor="middle">Data</text>
+    <text x="151" y="225" class="small" font-size="13" text-anchor="middle">1m CSV bars</text>
+
+    <rect x="280" y="165" width="150" height="86" rx="18" class="box ok"/>
+    <text x="355" y="199" class="text" font-size="17" font-weight="700" text-anchor="middle">Strategy</text>
+    <text x="355" y="225" class="small" font-size="13" text-anchor="middle">levels + FVGs</text>
+
+    <rect x="484" y="165" width="150" height="86" rx="18" class="box"/>
+    <text x="559" y="199" class="text" font-size="17" font-weight="700" text-anchor="middle">Signal</text>
+    <text x="559" y="225" class="small" font-size="13" text-anchor="middle">entry intent</text>
+
+    <rect x="688" y="165" width="150" height="86" rx="18" class="box gate"/>
+    <text x="763" y="199" class="text" font-size="17" font-weight="700" text-anchor="middle">Context</text>
+    <text x="763" y="225" class="small" font-size="13" text-anchor="middle">SPY / QQQ gate</text>
+
+    <rect x="892" y="165" width="132" height="86" rx="18" class="box"/>
+    <text x="958" y="199" class="text" font-size="17" font-weight="700" text-anchor="middle">Preview</text>
+    <text x="958" y="225" class="small" font-size="13" text-anchor="middle">paper proxy</text>
+  </g>
+
+  <g stroke="#94a3b8" stroke-width="2.5" fill="none" marker-end="url(#arrow)">
+    <path d="M226 208 H280"/>
+    <path d="M430 208 H484"/>
+    <path d="M634 208 H688"/>
+    <path d="M838 208 H892"/>
+  </g>
+
+  <line x1="660" y1="144" x2="660" y2="272" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 7"/>
+  <text x="682" y="285" class="muted" font-size="13">optional external boundary</text>
+  <text x="76" y="285" class="muted" font-size="13">Backtests produce deterministic ledgers, metrics, and tear sheets.</text>
 </svg>

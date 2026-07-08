@@ -51,8 +51,8 @@ with the current-status comparison in
 
 ![Silver Bullet indicator overview](docs/images/silver-bullet-indicator-overview.svg)
 
-The indicator view distinguishes prior-day and prior-week liquidity, tapped and
-untapped levels, active session windows, and bullish or bearish fair value gaps.
+The indicator view highlights prior-day and prior-week liquidity, the active
+session window, fair value gaps, and the signal marker.
 
 ### Bullish setup
 

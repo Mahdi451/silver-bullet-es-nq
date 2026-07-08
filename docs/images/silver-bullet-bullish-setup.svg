@@ -1,101 +1,66 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" role="img" aria-labelledby="title desc">
-  <title id="title">TradingView-style bullish Silver Bullet setup</title>
-  <desc id="desc">Clean candlestick chart showing a bullish Silver Bullet setup with upside liquidity target, two fair value gaps, entry, and stop.</desc>
-  <rect width="1200" height="640" fill="#0f172a"/>
-  <rect x="70" y="54" width="1018" height="510" rx="18" fill="#111827" stroke="#243244"/>
-  <rect x="70" y="54" width="1018" height="42" rx="18" fill="#151f2e"/>
-  <text x="92" y="81" fill="#e5e7eb" font-family="Arial, sans-serif" font-size="17" font-weight="700">ES1! - Bullish Silver Bullet Setup - 1m</text>
-  <text x="1010" y="81" fill="#94a3b8" font-family="Arial, sans-serif" font-size="13" text-anchor="end">Clean concept chart</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
+  <title id="title">Bullish Silver Bullet setup</title>
+  <desc id="desc">Minimal bullish setup chart with upside target, stop, two fair value gaps, and entry marker.</desc>
+  <defs>
+    <style>
+      .bg{fill:#0b1120}
+      .panel{fill:#111827;stroke:#243244;stroke-width:1.5}
+      .header{fill:#151f2e}
+      .grid{stroke:#223047;stroke-width:1}
+      .axis{stroke:#334155;stroke-width:1.5}
+      .wick{stroke:#64748b;stroke-width:2;stroke-linecap:round}
+      .up{fill:#22c55e}
+      .down{fill:#ef4444}
+      .text{fill:#f8fafc;font-family:Arial,sans-serif}
+      .muted{fill:#94a3b8;font-family:Arial,sans-serif}
+    </style>
+  </defs>
+  <rect width="1200" height="560" class="bg"/>
+  <rect x="70" y="54" width="1060" height="430" rx="24" class="panel"/>
+  <rect x="70" y="54" width="1060" height="52" rx="24" class="header"/>
+  <text x="98" y="87" class="text" font-size="18" font-weight="700">Bullish Silver Bullet Setup</text>
+  <text x="1098" y="87" class="muted" font-size="13" text-anchor="end">target above, stop below</text>
 
-  <g stroke="#1f2a3a" stroke-width="1">
-    <line x1="102" y1="134" x2="1044" y2="134"/>
-    <line x1="102" y1="188" x2="1044" y2="188"/>
-    <line x1="102" y1="242" x2="1044" y2="242"/>
-    <line x1="102" y1="296" x2="1044" y2="296"/>
-    <line x1="102" y1="350" x2="1044" y2="350"/>
-    <line x1="102" y1="404" x2="1044" y2="404"/>
-    <line x1="102" y1="458" x2="1044" y2="458"/>
-    <line x1="194" y1="118" x2="194" y2="484"/>
-    <line x1="286" y1="118" x2="286" y2="484"/>
-    <line x1="378" y1="118" x2="378" y2="484"/>
-    <line x1="470" y1="118" x2="470" y2="484"/>
-    <line x1="562" y1="118" x2="562" y2="484"/>
-    <line x1="654" y1="118" x2="654" y2="484"/>
-    <line x1="746" y1="118" x2="746" y2="484"/>
-    <line x1="838" y1="118" x2="838" y2="484"/>
-    <line x1="930" y1="118" x2="930" y2="484"/>
+  <g>
+    <line x1="112" y1="165" x2="1056" y2="165" class="grid"/>
+    <line x1="112" y1="245" x2="1056" y2="245" class="grid"/>
+    <line x1="112" y1="325" x2="1056" y2="325" class="grid"/>
+    <line x1="112" y1="405" x2="1056" y2="405" class="grid"/>
+    <line x1="112" y1="125" x2="112" y2="442" class="axis"/>
+    <line x1="112" y1="442" x2="1056" y2="442" class="axis"/>
   </g>
 
-  <g stroke-width="2" stroke-dasharray="8 7">
-    <line x1="102" y1="148" x2="1044" y2="148" stroke="#38bdf8"/>
-    <line x1="102" y1="432" x2="1044" y2="432" stroke="#ef4444"/>
+  <g stroke-dasharray="8 7" stroke-width="2">
+    <line x1="112" y1="150" x2="1056" y2="150" stroke="#38bdf8"/>
+    <line x1="112" y1="412" x2="1056" y2="412" stroke="#ef4444"/>
   </g>
-  <rect x="1046" y="136" width="70" height="24" rx="4" fill="#0e7490"/>
-  <text x="1081" y="153" fill="#ecfeff" font-family="Arial, sans-serif" font-size="12" text-anchor="middle">TARGET</text>
-  <rect x="1046" y="420" width="70" height="24" rx="4" fill="#991b1b"/>
-  <text x="1081" y="437" fill="#fee2e2" font-family="Arial, sans-serif" font-size="12" text-anchor="middle">STOP</text>
+  <rect x="985" y="128" width="94" height="30" rx="8" fill="#0e7490"/>
+  <text x="1032" y="148" fill="#ecfeff" font-family="Arial,sans-serif" font-size="12" font-weight="700" text-anchor="middle">TARGET</text>
+  <rect x="985" y="390" width="94" height="30" rx="8" fill="#991b1b"/>
+  <text x="1032" y="410" fill="#fee2e2" font-family="Arial,sans-serif" font-size="12" font-weight="700" text-anchor="middle">STOP</text>
 
-  <g font-family="Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="end">
-    <text x="1132" y="138">5310.00</text>
-    <text x="1132" y="192">5305.00</text>
-    <text x="1132" y="246">5300.00</text>
-    <text x="1132" y="300">5295.00</text>
-    <text x="1132" y="354">5290.00</text>
-    <text x="1132" y="408">5285.00</text>
-    <text x="1132" y="462">5280.00</text>
-  </g>
-  <g font-family="Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle">
-    <text x="194" y="512">09:58</text>
-    <text x="378" y="512">10:04</text>
-    <text x="562" y="512">10:10</text>
-    <text x="746" y="512">10:16</text>
-    <text x="930" y="512">10:22</text>
+  <g>
+    <line x1="170" y1="352" x2="170" y2="414" class="wick"/><rect x="160" y="372" width="20" height="26" rx="3" class="down"/>
+    <line x1="230" y1="330" x2="230" y2="392" class="wick"/><rect x="220" y="350" width="20" height="28" rx="3" class="up"/>
+    <line x1="290" y1="338" x2="290" y2="406" class="wick"/><rect x="280" y="356" width="20" height="32" rx="3" class="down"/>
+    <line x1="350" y1="310" x2="350" y2="376" class="wick"/><rect x="340" y="330" width="20" height="28" rx="3" class="up"/>
+    <line x1="410" y1="286" x2="410" y2="354" class="wick"/><rect x="400" y="304" width="20" height="34" rx="3" class="up"/>
+    <line x1="470" y1="226" x2="470" y2="330" class="wick"/><rect x="460" y="248" width="20" height="58" rx="3" class="up"/>
+    <line x1="530" y1="204" x2="530" y2="292" class="wick"/><rect x="520" y="226" width="20" height="42" rx="3" class="up"/>
+    <line x1="590" y1="246" x2="590" y2="332" class="wick"/><rect x="580" y="268" width="20" height="40" rx="3" class="down"/>
+    <line x1="650" y1="226" x2="650" y2="312" class="wick"/><rect x="640" y="250" width="20" height="38" rx="3" class="up"/>
+    <line x1="710" y1="194" x2="710" y2="272" class="wick"/><rect x="700" y="214" width="20" height="38" rx="3" class="up"/>
+    <line x1="770" y1="174" x2="770" y2="246" class="wick"/><rect x="760" y="192" width="20" height="36" rx="3" class="up"/>
+    <line x1="830" y1="156" x2="830" y2="226" class="wick"/><rect x="820" y="176" width="20" height="32" rx="3" class="up"/>
   </g>
 
-  <g stroke-linecap="round">
-    <line x1="138" y1="370" x2="138" y2="434" stroke="#64748b"/><rect x="130" y="388" width="16" height="25" rx="2" fill="#ef4444"/>
-    <line x1="172" y1="356" x2="172" y2="420" stroke="#64748b"/><rect x="164" y="372" width="16" height="30" rx="2" fill="#22c55e"/>
-    <line x1="206" y1="378" x2="206" y2="442" stroke="#64748b"/><rect x="198" y="394" width="16" height="24" rx="2" fill="#ef4444"/>
-    <line x1="240" y1="344" x2="240" y2="404" stroke="#64748b"/><rect x="232" y="360" width="16" height="26" rx="2" fill="#22c55e"/>
-    <line x1="274" y1="330" x2="274" y2="398" stroke="#64748b"/><rect x="266" y="350" width="16" height="30" rx="2" fill="#22c55e"/>
-    <line x1="308" y1="338" x2="308" y2="412" stroke="#64748b"/><rect x="300" y="358" width="16" height="34" rx="2" fill="#ef4444"/>
-    <line x1="342" y1="318" x2="342" y2="394" stroke="#64748b"/><rect x="334" y="336" width="16" height="36" rx="2" fill="#22c55e"/>
-    <line x1="376" y1="296" x2="376" y2="372" stroke="#64748b"/><rect x="368" y="316" width="16" height="36" rx="2" fill="#22c55e"/>
-    <line x1="410" y1="246" x2="410" y2="344" stroke="#64748b"/><rect x="402" y="270" width="16" height="54" rx="2" fill="#22c55e"/>
-    <line x1="444" y1="216" x2="444" y2="294" stroke="#64748b"/><rect x="436" y="236" width="16" height="36" rx="2" fill="#22c55e"/>
-    <line x1="478" y1="232" x2="478" y2="324" stroke="#64748b"/><rect x="470" y="252" width="16" height="46" rx="2" fill="#ef4444"/>
-    <line x1="512" y1="280" x2="512" y2="356" stroke="#64748b"/><rect x="504" y="300" width="16" height="34" rx="2" fill="#ef4444"/>
-    <line x1="546" y1="260" x2="546" y2="344" stroke="#64748b"/><rect x="538" y="286" width="16" height="34" rx="2" fill="#22c55e"/>
-    <line x1="580" y1="236" x2="580" y2="318" stroke="#64748b"/><rect x="572" y="260" width="16" height="34" rx="2" fill="#22c55e"/>
-    <line x1="614" y1="210" x2="614" y2="292" stroke="#64748b"/><rect x="606" y="232" width="16" height="40" rx="2" fill="#22c55e"/>
-    <line x1="648" y1="190" x2="648" y2="268" stroke="#64748b"/><rect x="640" y="210" width="16" height="38" rx="2" fill="#22c55e"/>
-    <line x1="682" y1="176" x2="682" y2="250" stroke="#64748b"/><rect x="674" y="196" width="16" height="34" rx="2" fill="#22c55e"/>
-    <line x1="716" y1="164" x2="716" y2="238" stroke="#64748b"/><rect x="708" y="184" width="16" height="32" rx="2" fill="#22c55e"/>
-    <line x1="750" y1="154" x2="750" y2="230" stroke="#64748b"/><rect x="742" y="174" width="16" height="34" rx="2" fill="#ef4444"/>
-    <line x1="784" y1="150" x2="784" y2="222" stroke="#64748b"/><rect x="776" y="166" width="16" height="32" rx="2" fill="#22c55e"/>
-    <line x1="818" y1="142" x2="818" y2="214" stroke="#64748b"/><rect x="810" y="160" width="16" height="28" rx="2" fill="#22c55e"/>
-    <line x1="852" y1="134" x2="852" y2="204" stroke="#64748b"/><rect x="844" y="150" width="16" height="26" rx="2" fill="#22c55e"/>
-    <line x1="886" y1="140" x2="886" y2="212" stroke="#64748b"/><rect x="878" y="158" width="16" height="30" rx="2" fill="#ef4444"/>
-    <line x1="920" y1="130" x2="920" y2="196" stroke="#64748b"/><rect x="912" y="146" width="16" height="28" rx="2" fill="#22c55e"/>
-  </g>
+  <rect x="456" y="306" width="98" height="34" rx="8" fill="#16a34a" opacity="0.22" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="505" y="363" fill="#86efac" font-family="Arial,sans-serif" font-size="12" font-weight="700" text-anchor="middle">FVG 1</text>
+  <rect x="638" y="286" width="98" height="34" rx="8" fill="#16a34a" opacity="0.22" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="687" y="343" fill="#86efac" font-family="Arial,sans-serif" font-size="12" font-weight="700" text-anchor="middle">FVG 2</text>
 
-  <rect x="398" y="326" width="84" height="32" rx="5" fill="#16a34a" opacity="0.24" stroke="#22c55e"/>
-  <rect x="582" y="274" width="84" height="32" rx="5" fill="#16a34a" opacity="0.24" stroke="#22c55e"/>
-  <circle cx="690" cy="206" r="6" fill="#fbbf24"/>
-  <line x1="690" y1="206" x2="690" y2="432" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4 5"/>
-  <rect x="702" y="193" width="58" height="26" rx="5" fill="#713f12"/>
-  <text x="731" y="211" fill="#fef3c7" font-family="Arial, sans-serif" font-size="12" text-anchor="middle">ENTRY</text>
-
-  <g opacity="0.55">
-    <rect x="130" y="530" width="16" height="26" fill="#ef4444"/>
-    <rect x="164" y="522" width="16" height="34" fill="#22c55e"/>
-    <rect x="300" y="528" width="16" height="28" fill="#ef4444"/>
-    <rect x="402" y="500" width="16" height="56" fill="#22c55e"/>
-    <rect x="436" y="510" width="16" height="46" fill="#22c55e"/>
-    <rect x="504" y="526" width="16" height="30" fill="#ef4444"/>
-    <rect x="606" y="506" width="16" height="50" fill="#22c55e"/>
-    <rect x="674" y="512" width="16" height="44" fill="#22c55e"/>
-    <rect x="742" y="532" width="16" height="24" fill="#ef4444"/>
-    <rect x="844" y="518" width="16" height="38" fill="#22c55e"/>
-  </g>
+  <line x1="742" y1="205" x2="742" y2="412" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4 6"/>
+  <circle cx="742" cy="205" r="7" fill="#fbbf24"/>
+  <rect x="758" y="188" width="72" height="32" rx="8" fill="#713f12"/>
+  <text x="794" y="209" fill="#fef3c7" font-family="Arial,sans-serif" font-size="12" font-weight="700" text-anchor="middle">ENTRY</text>
 </svg>
