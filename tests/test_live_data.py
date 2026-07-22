@@ -168,6 +168,49 @@ def test_alpaca_proxy_normalization_and_latest_price_book():
     assert book.price("spy") == 470.5
 
 
+def test_sync_alpaca_stream_dispatches_callback_on_runtime_event_loop():
+    async def exercise():
+        owner_loop = asyncio.get_running_loop()
+        raw = SimpleNamespace(
+            symbol="SPY",
+            timestamp=pd.Timestamp("2024-01-08 15:00:00Z"),
+            open=470,
+            high=471,
+            low=469,
+            close=470.5,
+            volume=1000,
+        )
+
+        class SyncStream:
+            def subscribe_bars(self, handler, *symbols):
+                self.handler = handler
+
+            def run(self):
+                asyncio.run(self.handler(raw))
+
+            def stop(self):
+                return None
+
+        stream = SyncStream()
+        feed = AlpacaProxyLiveFeed(
+            AlpacaLiveConfig(
+                symbols=("SPY",),
+                reconnect=ReconnectPolicy(0, 0, maximum_attempts=0),
+            ),
+            stream_factory=lambda: stream,
+        )
+        callback_loops = []
+
+        async def callback(bar):
+            callback_loops.append(asyncio.get_running_loop())
+
+        with pytest.raises(ConnectionError, match="stream ended"):
+            await feed.run(callback)
+        assert callback_loops == [owner_loop]
+
+    asyncio.run(exercise())
+
+
 def test_feed_health_staleness_requires_timezone_aware_clock():
     feed = ReplayLiveFeed([])
     with pytest.raises(ValueError, match="timezone-aware"):

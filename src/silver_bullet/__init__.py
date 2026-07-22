@@ -1,10 +1,41 @@
-"""Public API for the Silver Bullet research package."""
+"""Public API for the Silver Bullet research and live-trading package."""
 
 from .alpaca import (
     AlpacaProxyConfig,
     AlpacaProxyExecutor,
     ProxyOrderPreview,
     ProxyOrderResult,
+)
+from .alpaca_broker import AlpacaBroker, AlpacaBrokerConfig
+from .analytics import TearSheetBuilder, calculate_metrics, result_frames
+from .broker import (
+    BrokerAccount,
+    BrokerOrder,
+    BrokerOrderStatus,
+    BrokerPosition,
+    BrokerSnapshot,
+    ExecutionReconciler,
+    ExecutionStore,
+    LiveRiskGate,
+    LiveRiskLimits,
+    ManagedTradeStatus,
+    OrderSubmission,
+    ReconciliationReport,
+    SyntheticExitManager,
+    TrackedTrade,
+)
+from .calendar import CMECalendar, DEFAULT_CME_CALENDAR
+from .context import (
+    ContextGateConfig,
+    ContextGateDecision,
+    ExternalContextSnapshot,
+    SignalContextGate,
+)
+from .dashboard import (
+    DashboardConfig,
+    LiveOperatorController,
+    OperatorDashboard,
+    OperatorState,
 )
 from .data import (
     CSVBarLoader,
@@ -14,14 +45,6 @@ from .data import (
     LoadResult,
     MissingInterval,
 )
-from .calendar import CMECalendar, DEFAULT_CME_CALENDAR
-from .context import (
-    ContextGateConfig,
-    ContextGateDecision,
-    ExternalContextSnapshot,
-    SignalContextGate,
-)
-from .analytics import TearSheetBuilder, calculate_metrics, result_frames
 from .execution import (
     BacktestConfig,
     BacktestEngine,
@@ -36,6 +59,18 @@ from .execution import (
     Trade,
 )
 from .levels import LiquidityLevelTracker, trading_day, trading_week
+from .live_data import (
+    AlpacaLiveConfig,
+    AlpacaProxyLiveFeed,
+    DatabentoLiveConfig,
+    DatabentoLiveFeed,
+    FeedHealth,
+    FeedState,
+    LatestPriceBook,
+    ProxyBar,
+    ReconnectPolicy,
+    ReplayLiveFeed,
+)
 from .models import (
     Bar,
     BarSource,
@@ -47,6 +82,32 @@ from .models import (
     LiquidityLevel,
     TradeSignal,
 )
+from .optimization import (
+    OptimizationRecord,
+    OptimizationRunner,
+    WalkForwardSplit,
+    parameter_combinations,
+)
+from .options import (
+    AlpacaOptionChainClient,
+    AlpacaOptionChainConfig,
+    OptionChainSnapshot,
+    OptionContract,
+    OptionLeg,
+    OptionOrderCandidate,
+    OptionQuote,
+    OptionRight,
+    OptionsProfile,
+    OptionsSelectionConfig,
+    OptionsSelector,
+)
+from .runtime import (
+    EntryTiming,
+    ExecutionRoute,
+    LiveRuntime,
+    LiveRuntimeConfig,
+    RuntimeMode,
+)
 from .strategy import (
     DEFAULT_SESSIONS,
     SessionWindow,
@@ -54,66 +115,110 @@ from .strategy import (
     SilverBulletStrategy,
     StrategyStage,
 )
+from .tradovate import FuturesOrderPreview, TradovateBroker, TradovateConfig
 from .unusual_whales import UnusualWhalesClient, UnusualWhalesConfig
-from .optimization import (
-    OptimizationRecord,
-    OptimizationRunner,
-    WalkForwardSplit,
-    parameter_combinations,
-)
 
 __all__ = [
+    "AlpacaBroker",
+    "AlpacaBrokerConfig",
+    "AlpacaLiveConfig",
+    "AlpacaOptionChainClient",
+    "AlpacaOptionChainConfig",
     "AlpacaProxyConfig",
     "AlpacaProxyExecutor",
-    "Bar",
-    "BarSource",
+    "AlpacaProxyLiveFeed",
     "BacktestConfig",
     "BacktestEngine",
     "BacktestResult",
+    "Bar",
+    "BarSource",
+    "BrokerAccount",
+    "BrokerOrder",
+    "BrokerOrderStatus",
+    "BrokerPosition",
+    "BrokerSnapshot",
     "CMECalendar",
-    "ContextGateConfig",
-    "ContextGateDecision",
     "CSVBarLoader",
     "CSVSchema",
+    "ContextGateConfig",
+    "ContextGateDecision",
+    "CostModel",
+    "DEFAULT_CME_CALENDAR",
     "DEFAULT_SESSIONS",
+    "DashboardConfig",
     "DataQualityReport",
     "DataValidationError",
-    "DEFAULT_CME_CALENDAR",
+    "DatabentoLiveConfig",
+    "DatabentoLiveFeed",
     "Direction",
+    "EquityPoint",
+    "EntryTiming",
+    "ExecutionReconciler",
+    "ExecutionRoute",
+    "ExecutionStore",
     "ExternalContextSnapshot",
     "FairValueGap",
+    "FeedHealth",
+    "FeedState",
     "Fill",
     "FillReason",
+    "FuturesOrderPreview",
     "INSTRUMENTS",
     "InstrumentSpec",
+    "LatestPriceBook",
     "LiquidityKind",
     "LiquidityLevel",
     "LiquidityLevelTracker",
+    "LiveOperatorController",
+    "LiveRiskGate",
+    "LiveRiskLimits",
+    "LiveRuntime",
+    "LiveRuntimeConfig",
     "LoadResult",
+    "ManagedTradeStatus",
     "MissingInterval",
+    "OperatorDashboard",
+    "OperatorState",
     "OptimizationRecord",
     "OptimizationRunner",
+    "OptionChainSnapshot",
+    "OptionContract",
+    "OptionLeg",
+    "OptionOrderCandidate",
+    "OptionQuote",
+    "OptionRight",
+    "OptionsProfile",
+    "OptionsSelectionConfig",
+    "OptionsSelector",
+    "OrderSubmission",
+    "ProxyBar",
     "ProxyOrderPreview",
     "ProxyOrderResult",
-    "CostModel",
-    "EquityPoint",
+    "ReconnectPolicy",
+    "ReconciliationReport",
+    "ReplayLiveFeed",
     "RiskLimits",
     "RiskViolation",
+    "RuntimeMode",
     "SessionWindow",
+    "Side",
+    "SignalContextGate",
     "SilverBulletConfig",
     "SilverBulletStrategy",
-    "SignalContextGate",
     "StrategyStage",
-    "Side",
+    "SyntheticExitManager",
     "TearSheetBuilder",
+    "TrackedTrade",
     "Trade",
     "TradeSignal",
+    "TradovateBroker",
+    "TradovateConfig",
     "UnusualWhalesClient",
     "UnusualWhalesConfig",
-    "trading_day",
-    "trading_week",
     "WalkForwardSplit",
     "calculate_metrics",
     "parameter_combinations",
     "result_frames",
+    "trading_day",
+    "trading_week",
 ]

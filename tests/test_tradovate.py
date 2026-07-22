@@ -140,6 +140,7 @@ def test_tradovate_snapshot_normalizes_cash_positions_and_fills():
     snapshot = broker.snapshot(as_of=NOW)
     assert snapshot.account.equity == 101_000
     assert snapshot.account.buying_power == 100_000
+    assert snapshot.account.daily_pl == 1_000
     assert snapshot.positions[0].symbol == "ESH4"
     assert snapshot.fills[0].order_id == "8"
 

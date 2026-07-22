@@ -1,8 +1,8 @@
-# Options Execution Roadmap
+# Options Execution Policy and Status
 
-This roadmap defines how Silver Bullet `TradeSignal` objects should eventually
-route into an options engine. It is policy-level documentation only; live options
-contract selection and execution are not implemented yet.
+This document defines how Silver Bullet `TradeSignal` objects route into the
+implemented options engine. Local selection and broker-adapter tests are
+complete; credentialed Alpaca paper acceptance remains.
 
 ## Why Generic OTM Contracts Are Not The Default
 
@@ -104,8 +104,7 @@ probability of premium decay if the setup stalls.
 
 ## Contract Selection Inputs
 
-A future options module should require these inputs before creating an order
-candidate:
+The options module requires these inputs before creating an order candidate:
 
 - `signal`: the `TradeSignal` emitted by the futures strategy.
 - `proxy_symbol`: mapped equity or ETF proxy, such as `SPY` or `QQQ`.
@@ -131,17 +130,20 @@ candidate:
 
 ## Implementation Status
 
-Current repository support:
+Implemented repository support:
 
 - The strategy emits `TradeSignal` objects with target, stop, direction, session,
   and signal time.
 - The context gate can accept or reject signals before execution.
-- The Alpaca proxy adapter can preview or guard order submission.
+- Alpaca option-chain ingestion and normalized quote snapshots.
+- Deterministic high-delta, DOL debit-spread, and 0DTE momentum selection.
+- Alpaca single-leg and multi-leg order preview/submission.
+- Persistent entries, account snapshots, reconciliation, synthetic exits, and
+  kill-switch controls.
 
-Not implemented yet:
+Operational work still required:
 
-- Options chain ingestion.
-- Greeks-based contract selection.
-- Spread construction.
-- Bracket or exit-order synchronization.
-- Paper/live options fills and reconciliation.
+- Credentialed Alpaca paper fills, partial fills, restarts, and reconciliation.
+- Synthetic stop/target and forced-close acceptance under real stream timing.
+- Exercise, assignment, and expiry automation if those become required.
+- A multi-session paper soak before any separately approved live use.

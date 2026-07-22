@@ -62,7 +62,12 @@ class UrllibJsonTransport:
         request = urllib.request.Request(
             target, data=data, headers=request_headers, method=method.upper()
         )
-        for attempt in range(1, self.maximum_attempts + 1):
+        attempts = (
+            self.maximum_attempts
+            if method.upper() in {"GET", "HEAD", "OPTIONS"}
+            else 1
+        )
+        for attempt in range(1, attempts + 1):
             try:
                 with urllib.request.urlopen(
                     request, timeout=self.timeout_seconds
@@ -80,7 +85,7 @@ class UrllibJsonTransport:
                 )
             except urllib.error.URLError as exc:
                 last_error = ExternalServiceError(str(exc.reason))
-            if attempt < self.maximum_attempts:
+            if attempt < attempts:
                 time.sleep(self.retry_delay_seconds * attempt)
         raise last_error
 

@@ -17,9 +17,9 @@ deterministic, event-driven, and free from third-party webhook latency.
   adding live execution.
 - The strategic goal is direct event processing: data arrives, state updates, a
   signal is emitted, and risk controls decide whether execution is allowed.
-- Phase labels matter: the current repo has the backtest/state-machine core and
-  provider boundaries, while live WebSockets and futures broker routing are later
-  phases.
+- Phase labels now distinguish local implementation from credentialed acceptance:
+  the research, live streams, options route, futures route, and dashboard exist,
+  while paper/demo soak evidence remains.
 
 ## Slide 2: Current Implemented Research Core
 
@@ -108,7 +108,7 @@ edge instead of defaulting to weak generic OTM contracts.
 
 **Speaker notes:**
 
-- The default future profile should be high-delta short-dated calls or puts with
+- The default implemented profile uses high-delta short-dated calls or puts with
   delta around `0.65` to `0.75`.
 - Target-defined debit spreads fit the strategy because the DOL target gives a
   natural short-strike reference.
@@ -117,20 +117,20 @@ edge instead of defaulting to weak generic OTM contracts.
 
 ## Slide 8: Alpaca Paper And Proxy Execution
 
-**Core technical message:** Alpaca is currently a guarded proxy boundary, not a
+**Core technical message:** Alpaca is the guarded SPY/QQQ options route, not the
 direct ES/NQ futures broker.
 
 **Featured visual:** `docs/images/blueprints/headless-command-center.png`
 
 **Speaker notes:**
 
-- The current adapter can preview mapped SPY/QQQ proxy orders and block stale,
-  oversized, disabled, or unsafe submissions.
-- Paper execution still needs account reconciliation, order-state sync, and
-  options-chain selection before it should be trusted.
-- Live mode should remain opt-in and guarded by explicit configuration.
+- The adapter fetches option chains, routes selected single/multi-leg candidates,
+  and blocks stale, oversized, disabled, or unsafe submissions.
+- Persistent order state, account snapshots, reconciliation, synthetic exits,
+  and dashboard controls are implemented; credentialed paper acceptance remains.
+- Live mode remains behind config opt-in and a second command confirmation.
 
-## Slide 9: Deployment And Multi-Broker Future State
+## Slide 9: Deployment And Multi-Broker Runtime
 
 **Core technical message:** The long-term architecture decouples data ingress,
 state-machine logic, and broker execution.
@@ -139,10 +139,10 @@ state-machine logic, and broker execution.
 
 **Speaker notes:**
 
-- Phase 2 should validate paper execution and operator monitoring before live
-  capital.
-- Phase 3 can swap execution routing to a live futures broker once broker API,
-  order semantics, and risk controls are selected.
+- The runtime routes either Alpaca options or explicitly mapped Tradovate futures
+  while sharing strategy, risk, persistence, and monitoring.
+- Phase 2 and Phase 3 acceptance now means paper/demo sessions, restarts,
+  disconnects, rollover, emergency controls, and multi-session soak testing.
 - The same state-machine core should remain replayable and testable across
   historical, paper, and live modes.
 
@@ -157,7 +157,7 @@ verification, then live deployment only after safety gaps are closed.
 
 - Remaining research work includes real Databento ES/NQ validation, CME holiday
   hardening, multi-year benchmarks, and manual chart audits.
-- Remaining execution work includes options-chain selection, bracket logic,
-  account reconciliation, and live order failure handling.
-- The project should keep Phase 1, Phase 2, and Phase 3 labels visible until each
-  layer is independently tested.
+- Remaining execution work is credentialed acceptance of real feed timing,
+  paper/demo fills, partial failures, restart drift, and emergency controls.
+- Present implementation, operational acceptance, and real-money approval as
+  three separate milestones.

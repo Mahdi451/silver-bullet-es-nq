@@ -64,6 +64,7 @@ class BrokerAccount:
     trading_blocked: bool = False
     account_blocked: bool = False
     options_level: int | None = None
+    daily_pl: float | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -309,12 +310,11 @@ class LiveRiskGate:
         open_orders = [order for order in snapshot.orders if not order.status.terminal]
         if len(open_orders) >= self.limits.maximum_open_orders:
             raise RuntimeError("maximum open orders reached")
-        if (
-            daily_pl is not None
-            and self.limits.maximum_daily_loss is not None
-            and daily_pl <= -self.limits.maximum_daily_loss
-        ):
-            raise RuntimeError("daily loss limit reached")
+        if self.limits.maximum_daily_loss is not None:
+            if daily_pl is None:
+                raise RuntimeError("broker daily P/L is unavailable")
+            if daily_pl <= -self.limits.maximum_daily_loss:
+                raise RuntimeError("daily loss limit reached")
 
 
 class ReconciliationSeverity(str, Enum):
@@ -524,6 +524,7 @@ class SyntheticExitManager:
         for trade in self.store.trades():
             if (
                 trade.status is not ManagedTradeStatus.OPEN
+                or trade.route != "options"
                 or trade.instrument.upper() != bar.instrument.upper()
             ):
                 continue

@@ -83,7 +83,11 @@ def test_dashboard_serves_status_and_token_protected_controls():
         assert "Silver Bullet Command Center" in html
         assert headers["X-Frame-Options"] == "DENY"
 
-        _, _, raw = _request(base + "/api/status")
+        with pytest.raises(urllib.error.HTTPError) as error:
+            _request(base + "/api/status")
+        assert error.value.code == 401
+
+        _, _, raw = _request(base + "/api/status", token="secret-token")
         payload = json.loads(raw)
         assert payload["mode"] == "paper"
         assert payload["feeds"]["databento"]["bar_count"] == 12
@@ -105,6 +109,8 @@ def test_dashboard_serves_status_and_token_protected_controls():
         assert store.kill_switch.engaged
         assert broker.canceled == 1
         assert broker.closed == 1
+        _, _, raw = _request(base + "/api/status", token="secret-token")
+        assert not json.loads(raw)["healthy"]
 
         _request(
             base + "/api/kill-switch/release",
@@ -118,5 +124,42 @@ def test_dashboard_serves_status_and_token_protected_controls():
 
 
 def test_non_loopback_dashboard_requires_control_token():
-    with pytest.raises(ValueError, match="control token"):
+    with pytest.raises(ValueError, match="loopback"):
         DashboardConfig(host="0.0.0.0", port=8765)
+    with pytest.raises(ValueError, match="loopback"):
+        DashboardConfig(host="0.0.0.0", port=8765, control_token="secret")
+
+
+def test_halt_entries_preserves_existing_broker_protection():
+    store = ExecutionStore()
+    state = OperatorState(store, clock=lambda: NOW)
+    broker = FakeBroker()
+    controller = LiveOperatorController(
+        store, state, {"fake": broker}, clock=lambda: NOW
+    )
+
+    result = controller.engage("pause new entries", flatten=False)
+
+    assert result == {}
+    assert store.kill_switch.engaged
+    assert broker.canceled == 0
+    assert broker.closed == 0
+
+
+def test_flatten_failure_keeps_local_kill_switch_engaged():
+    class FailingBroker(FakeBroker):
+        def cancel_all_orders(self):
+            raise RuntimeError("broker unavailable")
+
+    store = ExecutionStore()
+    state = OperatorState(store, clock=lambda: NOW)
+    broker = FailingBroker()
+    controller = LiveOperatorController(
+        store, state, {"fake": broker}, clock=lambda: NOW
+    )
+
+    with pytest.raises(RuntimeError, match="engaged locally"):
+        controller.engage("emergency", flatten=True)
+
+    assert store.kill_switch.engaged
+    assert broker.closed == 1

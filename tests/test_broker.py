@@ -135,6 +135,35 @@ def test_reconciler_engages_kill_switch_on_position_drift():
     assert store.kill_switch.engaged
 
 
+def test_exclusive_account_reconciliation_halts_on_untracked_position():
+    store = ExecutionStore()
+    snapshot = BrokerSnapshot(
+        "alpaca",
+        NOW,
+        _account(),
+        (),
+        (
+            BrokerPosition(
+                "SPY240108C00470000",
+                1,
+                5,
+                5.1,
+                510,
+                10,
+                AssetClass.OPTION,
+            ),
+        ),
+    )
+
+    report = ExecutionReconciler(store, exclusive_account=True).reconcile(
+        snapshot
+    )
+
+    assert not report.healthy
+    assert report.issues[0].kind == "orphan_position"
+    assert store.kill_switch.engaged
+
+
 def test_risk_gate_blocks_kill_switch_and_order_risk():
     store = ExecutionStore()
     gate = LiveRiskGate(store, LiveRiskLimits(maximum_order_risk=500))
@@ -144,6 +173,20 @@ def test_risk_gate_blocks_kill_switch_and_order_risk():
     store.engage_kill_switch("test", as_of=NOW)
     with pytest.raises(RuntimeError, match="kill switch"):
         gate.validate(snapshot, estimated_order_risk=100)
+
+
+def test_risk_gate_blocks_broker_reported_daily_loss():
+    store = ExecutionStore()
+    gate = LiveRiskGate(
+        store, LiveRiskLimits(maximum_daily_loss=500)
+    )
+    snapshot = BrokerSnapshot("alpaca", NOW, _account(), (), ())
+    with pytest.raises(RuntimeError, match="daily loss"):
+        gate.validate(
+            snapshot, estimated_order_risk=100, daily_pl=-500
+        )
+    with pytest.raises(RuntimeError, match="unavailable"):
+        gate.validate(snapshot, estimated_order_risk=100, daily_pl=None)
 
 
 class FakeCloser:

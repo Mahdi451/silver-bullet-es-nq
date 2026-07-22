@@ -20,13 +20,13 @@
   <rect width="1100" height="360" class="bg"/>
   <rect x="44" y="42" width="1012" height="268" rx="28" class="panel"/>
 
-  <text x="76" y="90" class="text" font-size="30" font-weight="700">Current Project State</text>
-  <text x="76" y="120" class="muted" font-size="15">Research core first. External context and execution stay behind explicit boundaries.</text>
+  <text x="76" y="90" class="text" font-size="30" font-weight="700">Implemented System Paths</text>
+  <text x="76" y="120" class="muted" font-size="15">Research and guarded live execution share one deterministic strategy boundary.</text>
 
   <g>
     <rect x="76" y="165" width="150" height="86" rx="18" class="box accent"/>
     <text x="151" y="199" class="text" font-size="17" font-weight="700" text-anchor="middle">Data</text>
-    <text x="151" y="225" class="small" font-size="13" text-anchor="middle">1m CSV bars</text>
+    <text x="151" y="225" class="small" font-size="13" text-anchor="middle">CSV + live bars</text>
 
     <rect x="280" y="165" width="150" height="86" rx="18" class="box ok"/>
     <text x="355" y="199" class="text" font-size="17" font-weight="700" text-anchor="middle">Strategy</text>
@@ -34,15 +34,15 @@
 
     <rect x="484" y="165" width="150" height="86" rx="18" class="box"/>
     <text x="559" y="199" class="text" font-size="17" font-weight="700" text-anchor="middle">Signal</text>
-    <text x="559" y="225" class="small" font-size="13" text-anchor="middle">entry intent</text>
+    <text x="559" y="225" class="small" font-size="13" text-anchor="middle">timed intent</text>
 
     <rect x="688" y="165" width="150" height="86" rx="18" class="box gate"/>
     <text x="763" y="199" class="text" font-size="17" font-weight="700" text-anchor="middle">Context</text>
     <text x="763" y="225" class="small" font-size="13" text-anchor="middle">SPY / QQQ gate</text>
 
     <rect x="892" y="165" width="132" height="86" rx="18" class="box"/>
-    <text x="958" y="199" class="text" font-size="17" font-weight="700" text-anchor="middle">Preview</text>
-    <text x="958" y="225" class="small" font-size="13" text-anchor="middle">paper proxy</text>
+    <text x="958" y="199" class="text" font-size="17" font-weight="700" text-anchor="middle">Route</text>
+    <text x="958" y="225" class="small" font-size="13" text-anchor="middle">options / futures</text>
   </g>
 
   <g stroke="#94a3b8" stroke-width="2.5" fill="none" marker-end="url(#arrow)">
@@ -53,6 +53,6 @@
   </g>
 
   <line x1="660" y1="144" x2="660" y2="272" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 7"/>
-  <text x="682" y="285" class="muted" font-size="13">optional external boundary</text>
-  <text x="76" y="285" class="muted" font-size="13">Backtests produce deterministic ledgers, metrics, and tear sheets.</text>
+  <text x="682" y="285" class="muted" font-size="13">guarded provider and broker boundary</text>
+  <text x="76" y="285" class="muted" font-size="13">Backtests and live operation retain deterministic signals and persistent safety state.</text>
 </svg>

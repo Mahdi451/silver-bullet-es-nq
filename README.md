@@ -1,19 +1,23 @@
 # Silver Bullet ES/NQ
 
-An event-driven Python research foundation for testing a formalized ICT Silver
-Bullet strategy on one-minute ES and NQ futures data.
+An event-driven Python system for researching and operating a formalized ICT
+Silver Bullet strategy on one-minute ES and NQ futures data.
 
-The repository now implements the complete research path:
+The repository implements the complete research path and a guarded live runtime:
 
 1. strict historical-data ingestion and dynamic liquidity levels;
 2. causal strategy signals without future-data leakage;
 3. deterministic fills, costs, trade management, and portfolio accounting;
 4. metrics, ledgers, tear-sheet artifacts, risk checks, and walk-forward tools;
-5. optional external context gating and paper-first proxy execution boundaries.
+5. optional external context gating and deterministic options selection;
+6. Databento futures and Alpaca proxy streams, Alpaca options execution,
+   Tradovate futures execution, persistent reconciliation, and an operator
+   dashboard.
 
-Direct ES/NQ futures brokerage remains out of scope. The current live-facing path
-uses Unusual Whales as an equity/options context filter and Alpaca as an optional
-paper-first proxy execution adapter for mapped instruments such as SPY and QQQ.
+The live code is dry-run first. Paper/demo submission is explicit, and real-money
+mode requires two separate opt-ins. Provider-credentialed paper/demo acceptance
+and soak testing remain operational prerequisites; passing the local suite does
+not mean the system is approved for unattended capital.
 
 > This is research software, not financial advice. Futures trading involves
 > substantial risk.
@@ -27,24 +31,23 @@ the Python package.
 
 ![Silver Bullet project state and integration flow](docs/images/project-state-flow.svg)
 
-The current implementation is research-first. CSV history flows through the
-deterministic ES/NQ strategy and backtest engine. External services are isolated
-behind explicit boundaries: Unusual Whales can provide SPY/QQQ equity-options
-context for signal gating, and Alpaca can preview or submit mapped proxy orders
-after the gate passes.
+CSV history and live bars share the deterministic ES/NQ strategy. External
+services remain isolated behind explicit boundaries: Unusual Whales can gate a
+signal, Alpaca can supply proxy bars and options chains and route options, and
+Tradovate can route an explicitly mapped futures contract.
 
 ### Presentation blueprints
 
 These phase-labeled blueprint visuals are intended for slides and roadmap
-discussions. They include planned Phase 2 and Phase 3 components, so read them
-with the current-status comparison in
+discussions. They preserve the original phase framing, so read them with the
+current-status comparison in
 [`docs/project-status-vs-template.md`](docs/project-status-vs-template.md).
 
 | Blueprint | Focus |
 | --- | --- |
 | [`event-driven-system-architecture.png`](docs/images/blueprints/event-driven-system-architecture.png) | End-to-end event-driven loop with phase labels |
 | [`strategy-sequence-diagram.png`](docs/images/blueprints/strategy-sequence-diagram.png) | Silver Bullet state-shift sequence across session windows |
-| [`headless-command-center.png`](docs/images/blueprints/headless-command-center.png) | Planned headless M4 operator dashboard |
+| [`headless-command-center.png`](docs/images/blueprints/headless-command-center.png) | Original command-center blueprint; the local dashboard is now implemented |
 | [`multi-broker-execution-logic.png`](docs/images/blueprints/multi-broker-execution-logic.png) | Decoupled data ingress and execution routing |
 
 ### Indicator overview
@@ -64,18 +67,21 @@ session window, fair value gaps, and the signal marker.
 
 ## Current project state
 
-The project now has three layers with clear ownership:
+The project now has six layers with clear ownership:
 
 | Layer | Status | Primary files |
 | --- | --- | --- |
 | Historical research engine | Implemented and tested | `data.py`, `levels.py`, `strategy.py`, `execution.py`, `analytics.py`, `optimization.py` |
-| External context gate | Implemented as provider-neutral boundary plus Unusual Whales adapter | `context.py`, `unusual_whales.py` |
-| Proxy execution | Implemented as guarded Alpaca preview/submission boundary | `alpaca.py` |
+| External context gate | Implemented and optional | `context.py`, `unusual_whales.py` |
+| Live market data | Implemented with reconnect and health state | `live_data.py` |
+| Options selection and execution | Implemented for three profiles and Alpaca single/multi-leg orders | `options.py`, `alpaca_broker.py` |
+| Direct futures execution | Implemented with explicit contracts and native OSO/OCO protection | `tradovate.py` |
+| Runtime and operations | Implemented with persistence, reconciliation, fail-closed behavior, CLI, and dashboard | `runtime.py`, `live_cli.py`, `broker.py`, `dashboard.py` |
 
 The strategy layer remains pure futures research. It consumes canonical `Bar`
-events and emits `TradeSignal` objects. The new context and proxy execution
-layers are optional post-signal steps, so research runs do not require external
-credentials and tests never call live services.
+events and emits `TradeSignal` objects. The live layers are optional post-signal
+steps, so historical research does not require external credentials and
+automated tests never call live services.
 
 The important operating boundary is that Alpaca is not treated as a direct ES/NQ
 futures broker. Accepted ES signals map to configurable proxy symbols such as
@@ -93,12 +99,12 @@ the slide narrative, see
 | ES/NQ historical backtesting | Implemented | Uses prepared one-minute futures data and deterministic strategy/execution rules. |
 | Zero-look-ahead signal generation | Implemented | Liquidity levels, ATR, pivots, and FVG state are calculated causally from completed bars. |
 | Simulated fills and account accounting | Implemented | Includes fees, slippage, stops, scale-outs, DOL exits, forced closes, equity, and risk violations. |
-| Unusual Whales integration | Boundary implemented | Current adapter normalizes option-flow alerts into context scores; full proxy-data ingestion is future work. |
-| Alpaca execution | Boundary implemented | Supports guarded proxy preview/submission; options chain selection and full order sync are not implemented yet. |
-| Options execution profiles | Documented roadmap | Policy is documented, but contract selection and multi-leg routing are future modules. |
-| Live WebSocket ingestion | Planned | Belongs to Phase 2 paper-forward testing. |
-| Headless command center | Planned | Presentation/dashboard concept for operator monitoring. |
-| Live futures broker routing | Planned | Phase 3 only, after a broker API and safety model are selected. |
+| Unusual Whales integration | Implemented, optional | Normalizes option-flow alerts into context scores and gates at the entry decision. |
+| Alpaca options execution | Implemented; external acceptance pending | Fetches chains, selects single-leg or debit-spread candidates, checks the account, submits, closes, and reconciles. |
+| Options execution profiles | Implemented and unit tested | High-delta long, DOL debit spread, and constrained 0DTE momentum profiles. |
+| Live WebSocket ingestion | Implemented; external acceptance pending | Databento completed ES/NQ bars and Alpaca SPY/QQQ proxy bars run concurrently with reconnect health. |
+| Headless command center | Implemented and locally inspected | Local dashboard exposes health, trades, events, reconciliation, halt, flatten, and release controls. |
+| Live futures broker routing | Implemented; demo acceptance pending | Tradovate market entry with native target/stop brackets and explicit rollover mapping. |
 
 ### Documentation map
 
@@ -106,16 +112,18 @@ the slide narrative, see
 | --- | --- |
 | [`docs/project-status-vs-template.md`](docs/project-status-vs-template.md) | Compares the repository to the target automated trading-engine presentation template. |
 | [`docs/options-execution.md`](docs/options-execution.md) | Defines the three preferred options execution profiles and required selection filters. |
-| [`docs/future-options-module.md`](docs/future-options-module.md) | Plans a later provider-neutral options selection module. |
+| [`docs/future-options-module.md`](docs/future-options-module.md) | Records the completed provider-neutral options-module plan. |
 | [`docs/presentation-outline.md`](docs/presentation-outline.md) | Provides a structured 10-slide presentation narrative and speaker notes. |
+| [`docs/live-operations.md`](docs/live-operations.md) | Covers setup, normal operation, recovery, emergency controls, and external acceptance. |
+| [`docs/live-implementation-completion-2026-07-22.md`](docs/live-implementation-completion-2026-07-22.md) | Records the completed local implementation and exact remaining acceptance boundary. |
 
 ### Phase roadmap
 
 | Phase | Focus | Outcome |
 | --- | --- | --- |
-| Phase 1 | Research core and provider boundaries | Current state: repeatable ES/NQ backtests, context scoring boundary, and Alpaca proxy boundary. |
-| Phase 2 | Paper trading and options proxy execution | Add live/proxy data ingestion, options chain selection, paper account reconciliation, order-state sync, and operator logs. |
-| Phase 3 | Direct futures deployment | Add selected futures broker routing, live ES/NQ feed handling, production monitoring, and account-level live risk controls. |
+| Phase 1 | Research core | Implemented and locally tested. |
+| Phase 2 | Paper trading and options proxy execution | Code implemented; credentialed Alpaca paper sessions and soak testing remain. |
+| Phase 3 | Direct futures deployment | Code implemented for Tradovate; demo validation, rollover rehearsal, and live approval remain. |
 
 ## Strategy formalization
 
@@ -187,7 +195,7 @@ windows are explicit research extensions using the same state machine.
 
 ```text
 .
-├── docs/                    Roadmaps, presentation outline, and visual assets
+├── docs/                    Status, operations, presentation, and visual assets
 ├── docs/images/             Versioned SVG and PNG diagrams
 ├── examples/scan_csv.py     Command-line CSV scanner
 ├── src/silver_bullet/
@@ -199,23 +207,32 @@ windows are explicit research extensions using the same state machine.
 │   ├── optimization.py      Walk-forward parameter evaluation primitives
 │   ├── unusual_whales.py    Unusual Whales REST context adapter
 │   ├── alpaca.py            Alpaca proxy execution adapter
+│   ├── live_data.py         Databento and Alpaca live streams
+│   ├── options.py           Option-chain models and contract selection
+│   ├── broker.py            Persistent execution state and reconciliation
+│   ├── alpaca_broker.py     Alpaca options account and order adapter
+│   ├── tradovate.py         Tradovate futures and bracket adapter
+│   ├── dashboard.py         Local operator dashboard and controls
+│   ├── runtime.py           Integrated strategy and execution loop
 │   ├── levels.py            Causal PDH/PDL/PWH/PWL tracking
 │   ├── models.py            Canonical bars, levels, FVGs, and signals
 │   ├── strategy.py          Event-driven Silver Bullet state machine
-│   └── cli.py               Historical backtest command
-├── tests/                   Data, strategy, execution, context, and adapter tests
+│   ├── cli.py               Historical backtest command
+│   └── live_cli.py          Guarded live-operation command
+├── tests/                   Research, provider, runtime, safety, and UI tests
+├── live.example.json        Credential-free live configuration template
 ├── pyproject.toml           Package and development dependencies
 └── Silver-Bullet-Strategy.pdf
 ```
 
 The strategy consumes canonical `Bar` events through a `BarSource` boundary.
-CSV parsing is kept outside the strategy, so a future database or websocket feed
-can implement the same interface without changing signal logic.
+CSV parsing and live streams stay outside the strategy, so both paths use the
+same signal logic.
 
 External context and broker execution are also kept outside the strategy. The
 strategy emits `TradeSignal`; a `SignalContextGate` may accept or reject it using
-normalized context, and an `AlpacaProxyExecutor` may preview or submit a mapped
-proxy order only after that signal has passed the gate.
+normalized context. The runtime can then select an Alpaca options candidate or
+route the explicitly configured Tradovate futures contract.
 
 ## Installation
 
@@ -224,6 +241,12 @@ Python 3.11 or newer is required.
 ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install -e '.[dev]'
+```
+
+Install the provider SDKs for live operation:
+
+```bash
+.venv/bin/python -m pip install -e '.[dev,live]'
 ```
 
 Run verification:
@@ -395,6 +418,38 @@ The same run can be stored in `backtest.example.json` and launched with:
 .venv/bin/silver-bullet-backtest --config backtest.example.json
 ```
 
+## Run the guarded live runtime
+
+Start from the credential-free template and keep the real file uncommitted:
+
+```bash
+cp live.example.json live.json
+export DATABENTO_API_KEY='...'
+export ALPACA_API_KEY='...'
+export ALPACA_SECRET_KEY='...'
+.venv/bin/silver-bullet-live --config live.json
+```
+
+The template uses `dry_run`, previews rather than submits, persists safety state
+under `.silver-bullet/`, and serves the local command center at
+`http://127.0.0.1:8765`. Use `--mode paper` for Alpaca paper or Tradovate demo
+submission. Real-money mode remains locked until `allow_live` is set to `true`
+in the private config and the command also includes `--mode live --confirm-live
+LIVE`.
+
+Set `route` to `options` for Alpaca-selected SPY/QQQ options or `futures` for
+Tradovate. The futures route refuses the example placeholders: replace them with
+the exact active ES/NQ contract symbols and rehearse rollover in demo first.
+
+Databento labels an OHLCV bar with the start of its interval and publishes the
+aggregate after that interval completes. Accordingly, when a completed bar
+creates a signal, the live runtime treats its arrival as the next-minute entry
+boundary, rejects delayed preparation beyond the configured limit, and sends a
+market entry request using the completed close only as the pre-submit risk
+reference. It cannot guarantee the exchange fill equals the recorded next bar
+open. See [`docs/live-operations.md`](docs/live-operations.md) before running a
+paper or demo session.
+
 ## Preview Alpaca proxy orders
 
 Alpaca does not execute ES/NQ futures in this project. Accepted futures-derived
@@ -418,11 +473,10 @@ the executor with `AlpacaProxyExecutor.from_environment()`. It reads
 `ALPACA_API_KEY`, `ALPACA_SECRET_KEY`, and `ALPACA_PAPER`; non-dry-run submission
 requires `enabled=True`, and live mode additionally requires `allow_live=True`.
 
-## Options execution roadmap
+## Options execution profiles
 
-Accepted Silver Bullet signals can eventually route into an options engine, but
-the current repository does not yet select option contracts or submit live
-options orders. The intended options layer should preserve the futures signal's
+Accepted Silver Bullet signals can route through the provider-neutral selector
+and Alpaca options broker. The options layer preserves the futures signal's
 direction, target, stop geometry, and short expected holding time.
 
 Generic low-delta OTM contracts are not the default. They can destroy expectancy
@@ -435,14 +489,13 @@ quality. The preferred profiles are:
 | Target-defined vertical debit spreads | Buy ATM and sell the strike nearest the DOL target | Risk-defined expression when the liquidity target maps cleanly to a liquid strike. |
 | 0DTE momentum scalp | Buy slightly OTM delta `0.40` contracts | Aggressive convexity profile for Macro Open or NY AM when expected delivery is at least 10 index points. |
 
-A future options selector should reject candidates with stale signals, wide
-spreads, low liquidity, excessive premium, incompatible expiry, or poor
-DOL-to-strike mapping. It should return order candidates first; broker-specific
-order construction should remain a separate execution step.
+The selector rejects candidates with stale signals, wide spreads, low liquidity,
+excessive premium, incompatible expiry, or poor DOL-to-strike mapping. It returns
+provider-neutral candidates before the Alpaca adapter constructs an order.
 
 See [`docs/options-execution.md`](docs/options-execution.md) for the execution
 policy and [`docs/future-options-module.md`](docs/future-options-module.md) for
-the later implementation plan.
+the completed implementation plan and remaining non-goals.
 
 ## Configuration
 
@@ -464,15 +517,14 @@ strategy = SilverBulletStrategy("NQ", config=config)
 ES and NQ both use a `0.25`-point tick. Their point values are $50 for ES and
 $20 for NQ.
 
-`backtest.example.json` also documents optional integration settings for the new
-phase:
+`backtest.example.json` documents research settings. `live.example.json`
+documents live boundaries without containing credentials:
 
-- `context_gate` configures proxy symbol mapping, freshness, and score
-  thresholds;
-- `unusual_whales` documents the API key environment variable and flow-alert
-  filters;
-- `alpaca_proxy` documents paper mode, proxy quantities, notional limits, and
-  credential environment variables.
+- route, mode, instruments, persistent state, and reconciliation cadence;
+- Databento and Alpaca feeds, proxy mapping, and reconnect behavior;
+- options profile, selection quality, and account-level risk limits;
+- explicit Tradovate contracts and quantities;
+- optional Unusual Whales thresholds and local dashboard controls.
 
 ## Test coverage
 
@@ -493,12 +545,18 @@ The automated suite covers:
 - stop-first ambiguity, slippage, fees, scale-outs, DOL exits, and forced closes;
 - account reconciliation, artifact generation, and walk-forward grids;
 - context-gate decisions, Unusual Whales normalization, and Alpaca proxy safety
-  checks.
+  checks;
+- live-feed normalization, reconnects, and cross-thread stream dispatch;
+- all three options-selection profiles and Alpaca single/multi-leg orders;
+- Tradovate authentication, native brackets, liquidation, and contract mapping;
+- next-minute boundary timing, late-entry rejection, route selection, persistent
+  restart reconciliation, and fail-closed runtime behavior;
+- dashboard status, authentication, reconciliation, halt, flatten, and release.
 
 ## Current boundary and next phase
 
-Remaining acceptance work requires licensed external data and paper-account
-validation:
+Remaining work is acceptance and operational validation, not another missing
+runtime module:
 
 - validate representative real Databento ES and NQ exports;
 - add the exact holiday and early-close dates required by each tested period;
@@ -506,10 +564,13 @@ validation:
 - manually audit real accepted/rejected setups against charts;
 - define any provider-specific multi-contract stitching policy;
 - empirically validate Unusual Whales context filters against futures setups;
-- design and test a provider-neutral options contract selector;
-- paper-test Alpaca proxy execution, order-state reconciliation, and kill-switch
-  behavior before considering live proxy trading;
-- choose a futures broker API before any Phase 3 ES/NQ live-routing work.
+- run credentialed Databento plus Alpaca dry-run sessions and record feed delay;
+- paper-test Alpaca options fills, multi-leg exits, reconciliation, and emergency
+  controls through disconnects and restarts;
+- demo-test Tradovate brackets, partial fills, cancel/flatten failures, and
+  explicit quarterly rollover;
+- complete a multi-session soak with no unexplained reconciliation drift before
+  considering the separately gated live mode.
 
 The core engineering rule is to keep strategy detection, context gating,
 contract selection, and broker execution decoupled. That lets the same

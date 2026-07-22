@@ -418,16 +418,19 @@ def _response_order_id(payload: Any) -> str:
 
 def _parse_account(item: Mapping[str, Any]) -> BrokerAccount:
     options_level = item.get("options_trading_level")
+    equity = float(item.get("equity") or 0)
+    last_equity = _optional_float(item.get("last_equity"))
     return BrokerAccount(
         account_id=str(item.get("id") or item.get("account_number") or ""),
         status=str(item.get("status") or "unknown"),
-        equity=float(item.get("equity") or 0),
+        equity=equity,
         cash=float(item.get("cash") or 0),
         buying_power=float(item.get("buying_power") or 0),
         options_buying_power=_optional_float(item.get("options_buying_power")),
         trading_blocked=bool(item.get("trading_blocked", False)),
         account_blocked=bool(item.get("account_blocked", False)),
         options_level=None if options_level is None else int(options_level),
+        daily_pl=None if last_equity is None else equity - last_equity,
     )
 
 

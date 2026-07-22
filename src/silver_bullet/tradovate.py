@@ -651,6 +651,7 @@ def _tradovate_account(
         buying_power=available,
         trading_blocked=not active,
         account_blocked=not active,
+        daily_pl=_optional_float(balance.get("totalPnL")),
     )
 
 

@@ -101,6 +101,7 @@ class FakeTransport:
                 "id": "paper-1",
                 "status": "ACTIVE",
                 "equity": "100000",
+                "last_equity": "99500",
                 "cash": "50000",
                 "buying_power": "50000",
                 "options_buying_power": "25000",
@@ -148,6 +149,7 @@ def test_alpaca_snapshot_normalizes_account_and_fills():
     snapshot = broker.snapshot(as_of=NOW)
     assert snapshot.account.options_level == 3
     assert snapshot.account.buying_power == 50_000
+    assert snapshot.account.daily_pl == 500
     assert snapshot.fills[0].price == 2.05
 
 

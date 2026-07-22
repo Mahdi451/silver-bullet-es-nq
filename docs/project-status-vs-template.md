@@ -1,72 +1,56 @@
 # Project Status vs. Target Presentation Template
 
-This document maps the current repository to the target automated Silver Bullet
-trading-engine presentation. It is intentionally explicit about what is built
-today versus what belongs to the next phases.
+This document separates locally implemented code from provider-credentialed
+acceptance. “Implemented” means the code path and automated tests exist; it does
+not mean a live brokerage account has approved the behavior.
 
-## Summary
-
-The repository currently contains a deterministic ES/NQ research and backtesting
-engine with optional external context and proxy-execution boundaries. It is not
-yet a live WebSocket-driven options or futures execution system.
+## Current status
 
 | Area | Current status | Notes |
 | --- | --- | --- |
-| Historical ES/NQ ingestion | Implemented | CSV schemas, strict validation, timezone normalization, contract metadata, and gap reporting are in `src/silver_bullet/data.py`. |
-| Liquidity model | Implemented | Prior day/week levels, tap tracking, and CME trading day/week logic are in `src/silver_bullet/levels.py`. |
-| Silver Bullet state machine | Implemented | ATR displacement, swing break, first FVG, mitigation, second FVG, session gating, and signal timing are in `src/silver_bullet/strategy.py`. |
-| Backtest execution | Implemented | Deterministic fills, fees, slippage, scale-out, DOL exits, stops, forced close, risk checks, and ledgers are in `src/silver_bullet/execution.py`. |
-| Analytics and walk-forward primitives | Implemented | Metrics, tear sheets, ledgers, charts, and parameter-grid primitives are in `src/silver_bullet/analytics.py` and `src/silver_bullet/optimization.py`. |
-| Unusual Whales context | Boundary implemented | REST flow-alert normalization and context scoring exist in `src/silver_bullet/unusual_whales.py`; full historical proxy-data ingestion is not built yet. |
-| Signal context gate | Implemented | Provider-neutral accept/reject decisions exist in `src/silver_bullet/context.py`. |
-| Alpaca proxy execution | Boundary implemented | Dry-run previews and guarded submission boundaries exist in `src/silver_bullet/alpaca.py`; full options execution and live order reconciliation are not built yet. |
-| Live WebSocket ingestion | Not implemented | Future Phase 2 work. |
-| Advanced bracket orders | Not implemented | Future Phase 2 work after paper-trading account reconciliation is defined. |
-| Headless M4 command center | Not implemented | Future operator dashboard concept. |
-| Live futures broker routing | Not implemented | Future Phase 3 work after broker selection. |
-| Options contract selection | Not implemented | Planned as a separate module after policy and presentation docs are approved. |
+| Historical ES/NQ ingestion | Implemented and tested | Strict CSV schemas, timezone normalization, contract metadata, and gap reporting. |
+| Liquidity and strategy model | Implemented and tested | Causal day/week levels, ATR displacement, swing break, FVG sequence, session gating, and signal timing. |
+| Backtest execution and analytics | Implemented and tested | Fills, costs, exits, account risk, metrics, ledgers, charts, and walk-forward primitives. |
+| Unusual Whales context | Implemented, optional | Flow alerts normalize into a provider-neutral context decision at entry time. |
+| Databento live futures data | Implemented; credentialed acceptance pending | ES/NQ completed bars, contract mapping, reconnect state, health, and intraday replay boundary. |
+| Alpaca proxy data | Implemented; credentialed acceptance pending | SPY/QQQ completed bars with reconnect and cross-thread dispatch into the runtime. |
+| Options contract selection | Implemented and tested | High-delta long, DOL debit spread, and restricted 0DTE momentum profiles. |
+| Alpaca options execution | Implemented; paper acceptance pending | Account checks, single/multi-leg payloads, persistent tracking, close orders, snapshots, and reconciliation. |
+| Tradovate futures execution | Implemented; demo acceptance pending | Token renewal, explicit contract mapping, account checks, native OSO/OCO protection, liquidation, and reconciliation. |
+| Persistent broker safety | Implemented and tested | Idempotent ledger, account limits, broker-reported daily loss, exclusive-account drift detection, and persistent kill switch. |
+| Integrated live runtime | Implemented and tested | Warmup suppression, live entry boundary, late cancellation, route selection, synthetic exits, periodic reconciliation, and fail-closed stop. |
+| Local command center | Implemented and locally inspected | Status, health, prices, events, trades, reconcile, halt, flatten, and guarded release. |
+| Live command and config | Implemented and tested | Dry-run default, forced paper/demo mode, second real-money confirmation, persistent paths, and graceful shutdown. |
 
-## Phase Framing
+## Phase framing
 
-### Phase 1: Research Core And Proxy Boundaries
+### Phase 1: Research core
 
-This is the current repository state.
+Implemented and locally verified. Remaining research validation includes real
+provider exports, holiday/early-close expansion, longer benchmarks, and manual
+chart audits.
 
-- Historical ES/NQ backtesting.
-- Deterministic, zero-look-ahead signal generation.
-- Conservative simulated execution and account analytics.
-- Optional Unusual Whales context gate.
-- Optional Alpaca proxy-order preview/submission boundary.
+### Phase 2: Paper options operation
 
-### Phase 2: Paper Trading And Options Proxy Execution
+The code is implemented. Completion now requires credentialed Databento and
+Alpaca paper sessions, real fill/restart testing, synthetic-exit rehearsal, and
+a multi-session soak.
 
-This is the next implementation target.
+### Phase 3: Direct futures operation
 
-- Live or near-live SPY/QQQ proxy data ingestion.
-- Alpaca paper account checks, order-state synchronization, and reconciliation.
-- Options contract selection based on delta, expiry, spread quality, premium risk,
-  and DOL target geometry.
-- Bracket or bracket-like order management where the broker supports it.
-- Operator logs and health checks.
+The Tradovate adapter and shared runtime are implemented. Completion now requires
+API entitlement, demo bracket and liquidation testing, token-renewal testing,
+quarterly rollover rehearsal, and a separate live-capital decision.
 
-### Phase 3: Direct Futures Deployment
+## Status language for presentations
 
-This is future architecture and should not be presented as implemented.
+- `Implemented and tested`: available locally with automated evidence.
+- `Implemented; external acceptance pending`: code exists, but a credentialed
+  provider/account run remains.
+- `Operationally accepted`: use only after the runbook checklist has recorded
+  evidence.
+- `Live approved`: use only after a separate human approval enables real-money
+  configuration.
 
-- Direct ES/NQ live feed.
-- Low-latency hosting or VPS deployment.
-- Futures broker adapter, such as Tradovate, Tradier, or another selected broker.
-- Live contract routing with account-level risk enforcement.
-- Production-grade monitoring and kill-switch behavior.
-
-## Presentation Guidance
-
-When discussing the template, use status labels:
-
-- `Implemented`: available in the current repository.
-- `Boundary implemented`: interface exists, but complete production behavior is not
-  built.
-- `Planned`: design target for a later phase.
-- `Not in scope yet`: should not be implied as current behavior.
-
-This keeps the presentation ambitious without overstating the current codebase.
+See [`live-operations.md`](live-operations.md) for recovery, emergency controls,
+known limits, and the credentialed acceptance checklist.

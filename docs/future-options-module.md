@@ -1,7 +1,8 @@
-# Future Options Module Plan
+# Completed Options Module Plan
 
-This document outlines a later implementation module for routing accepted Silver
-Bullet signals into options candidates. It is not implemented in code yet.
+This document records the plan used to implement routing from accepted Silver
+Bullet signals into options candidates. The module and its Alpaca provider
+adapter now exist; the plan remains as design rationale and a non-goal record.
 
 ## Goal
 
@@ -9,15 +10,15 @@ Add an options selection layer that converts a gated `TradeSignal` into one or
 more risk-filtered option order candidates while keeping the core futures
 strategy unchanged.
 
-## Proposed Module Boundary
+## Implemented Module Boundary
 
-Future module name:
+Module name:
 
 ```text
 src/silver_bullet/options.py
 ```
 
-The module should sit after `SignalContextGate` and before broker execution:
+The module sits after `SignalContextGate` and before broker execution:
 
 ```text
 TradeSignal -> SignalContextGate -> OptionsSelector -> BrokerExecutor
@@ -25,8 +26,7 @@ TradeSignal -> SignalContextGate -> OptionsSelector -> BrokerExecutor
 
 ## Core Data Types
 
-The first implementation should introduce provider-neutral types before binding
-to Alpaca, Tradier, or another options data source.
+The implementation introduces provider-neutral types before the Alpaca binding.
 
 ```python
 OptionContract
@@ -37,7 +37,7 @@ OptionOrderCandidate
 OptionsSelectionConfig
 ```
 
-These types should capture:
+These types capture:
 
 - symbol and underlying;
 - call or put;
@@ -52,7 +52,7 @@ These types should capture:
 
 ## Selector Inputs
 
-The selector should require:
+The selector requires:
 
 - accepted `TradeSignal`;
 - proxy mapping such as `ES -> SPY` and `NQ -> QQQ`;
@@ -81,7 +81,7 @@ The selector should require:
 
 ## Risk Controls
 
-The options module should reject candidates when:
+The options module rejects candidates when:
 
 - spread is too wide;
 - volume or open interest is too low;
@@ -108,17 +108,16 @@ No tests should call live broker or market-data APIs.
 
 ## Implementation Sequence
 
-1. Add provider-neutral option chain and candidate data types.
-2. Add pure selection logic with fake snapshots.
-3. Add configuration examples to `backtest.example.json`.
-4. Add a dry-run CLI preview that prints selected option candidates.
-5. Add provider adapters only after the selector is fully tested.
-6. Add broker order construction after paper-account reconciliation is defined.
+1. Completed: provider-neutral option chain and candidate data types.
+2. Completed: pure selection logic with fake snapshots.
+3. Completed: live configuration example with profile and quality settings.
+4. Completed: integrated dry-run order previews.
+5. Completed: Alpaca option-chain provider after selector tests.
+6. Completed: account-aware single-leg and multi-leg broker construction.
 
-## Non-Goals For The First Version
+## Current Non-Goals
 
-- No live orders.
 - No automatic exercise or assignment handling.
 - No live Greeks polling loop.
 - No portfolio margin modeling.
-- No multi-leg execution until single-leg candidate selection is tested.
+- No claim of paper or live operational acceptance without credentialed runs.

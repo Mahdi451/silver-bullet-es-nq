@@ -103,7 +103,9 @@ class OperatorState:
             if issue.severity is ReconciliationSeverity.CRITICAL
         )
         feed_failures = sum(
-            1 for health in feeds.values() if health.state is FeedState.FAILED
+            1
+            for health in feeds.values()
+            if health.state in {FeedState.BACKOFF, FeedState.FAILED}
         )
         return _json_value(
             {
@@ -112,7 +114,11 @@ class OperatorState:
                 "as_of": now,
                 "started_at": self._started_at,
                 "uptime_seconds": max(0, (now - self._started_at).total_seconds()),
-                "healthy": critical == 0 and feed_failures == 0,
+                "healthy": (
+                    critical == 0
+                    and feed_failures == 0
+                    and not kill_switch.engaged
+                ),
                 "kill_switch": asdict(kill_switch),
                 "summary": {
                     "feeds": len(feeds),
@@ -130,7 +136,14 @@ class OperatorState:
                     name: {
                         "as_of": snapshot.as_of,
                         "account": asdict(snapshot.account),
-                        "orders": [asdict(order) for order in snapshot.orders],
+                        "orders": [
+                            {
+                                key: value
+                                for key, value in asdict(order).items()
+                                if key != "raw"
+                            }
+                            for order in snapshot.orders
+                        ],
                         "positions": [asdict(position) for position in snapshot.positions],
                         "fills": [asdict(fill) for fill in snapshot.fills[-50:]],
                     }
@@ -174,11 +187,13 @@ class LiveOperatorController:
         state: OperatorState,
         brokers: Mapping[str, OperatorBroker],
         *,
+        exclusive_account: bool = True,
         clock: Any = None,
     ) -> None:
         self.store = store
         self.state = state
         self.brokers = dict(brokers)
+        self.exclusive_account = exclusive_account
         self._clock = clock or (lambda: pd.Timestamp.now(tz="UTC"))
 
     def engage(self, reason: str, *, flatten: bool) -> dict[str, Any]:
@@ -186,18 +201,25 @@ class LiveOperatorController:
         self.store.engage_kill_switch(reason, as_of=now)
         results: dict[str, Any] = {}
         failures: dict[str, str] = {}
-        for name, broker in self.brokers.items():
-            try:
-                canceled = broker.cancel_all_orders()
+        if flatten:
+            for name, broker in self.brokers.items():
+                canceled = None
                 closed = None
-                if flatten:
+                errors = []
+                try:
+                    canceled = broker.cancel_all_orders()
+                except Exception as exc:
+                    errors.append(f"cancel failed: {exc}")
+                try:
                     try:
                         closed = broker.close_all_positions(cancel_orders=True)
                     except TypeError:
                         closed = broker.close_all_positions()
+                except Exception as exc:
+                    errors.append(f"flatten failed: {exc}")
                 results[name] = {"canceled": canceled, "closed": closed}
-            except Exception as exc:
-                failures[name] = str(exc)
+                if errors:
+                    failures[name] = "; ".join(errors)
         self.state.event(
             "critical",
             "risk",
@@ -218,7 +240,9 @@ class LiveOperatorController:
         results = {}
         for name, broker in self.brokers.items():
             snapshot = broker.snapshot(as_of=self._clock())
-            report = ExecutionReconciler(self.store).reconcile(snapshot)
+            report = ExecutionReconciler(
+                self.store, exclusive_account=self.exclusive_account
+            ).reconcile(snapshot)
             self.state.update_broker(snapshot)
             self.state.update_reconciliation(report)
             results[name] = {
@@ -249,8 +273,10 @@ class DashboardConfig:
     def __post_init__(self) -> None:
         if not 0 <= self.port <= 65535:
             raise ValueError("dashboard port is invalid")
-        if self.host not in {"127.0.0.1", "localhost", "::1"} and not self.control_token:
-            raise ValueError("a control token is required for non-loopback binding")
+        if self.host not in {"127.0.0.1", "localhost", "::1"}:
+            raise ValueError(
+                "dashboard supports loopback binding only; use a secure tunnel"
+            )
 
 
 class OperatorDashboard:
@@ -322,6 +348,9 @@ def _handler_factory(
                 self._send(HTTPStatus.OK, DASHBOARD_HTML, "text/html; charset=utf-8")
                 return
             if path in {"/api/status", "/api/health"}:
+                if not self._authorized():
+                    self._json(HTTPStatus.UNAUTHORIZED, {"error": "unauthorized"})
+                    return
                 payload = state.snapshot()
                 status = (
                     HTTPStatus.OK
@@ -467,9 +496,9 @@ DASHBOARD_HTML = r'''<!doctype html>
 const $=id=>document.getElementById(id), token=()=>sessionStorage.getItem('sb-token')||'';
 const esc=v=>String(v??'—').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const stamp=v=>v?new Date(v).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';
-async function post(path,body={}){let t=token();if(!t){t=prompt('Control token (leave blank if disabled)')||'';sessionStorage.setItem('sb-token',t)}const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json','X-Silver-Bullet-Token':t},body:JSON.stringify(body)});const j=await r.json();if(!r.ok)throw Error(j.error||r.statusText);return j}
+async function post(path,body={}){let t=token();const send=()=>fetch(path,{method:'POST',headers:{'Content-Type':'application/json','X-Silver-Bullet-Token':t},body:JSON.stringify(body)});let r=await send();if(r.status===401){t=prompt('Control token')||'';sessionStorage.setItem('sb-token',t);r=await send()}const j=await r.json();if(!r.ok)throw Error(j.error||r.statusText);return j}
 function render(s){$('clock').textContent=new Date(s.as_of).toLocaleString();$('mode').textContent='MODE '+s.mode.toUpperCase();$('health').textContent=s.healthy?'HEALTHY':'ATTENTION';$('health-dot').style.background=s.healthy?'var(--lime)':'var(--red)';$('feeds').textContent=s.summary.feeds;$('brokers').textContent=s.summary.brokers;$('open-trades').textContent=s.summary.open_trades;$('drift').textContent=s.summary.critical_reconciliation_issues;const k=s.kill_switch.engaged;$('kill').textContent=k?'ENGAGED':'ARMED';$('kill').className='value kill'+(k?' engaged':'');const feeds=Object.entries(s.feeds);$('feed-list').className=feeds.length?'':'empty';$('feed-list').innerHTML=feeds.map(([n,f])=>`<div class="feed"><strong>${esc(n)}</strong><span>${esc(f.state).toUpperCase()}</span><small>${esc(f.symbols.join(' · '))}</small><small>${f.bar_count} bars · ${f.reconnect_count} reconnects</small></div>`).join('')||'Waiting for feed state';$('trade-count').textContent=s.trades.length+' records';$('trade-table').innerHTML=s.trades.map(t=>`<tr><td>${esc(t.status)}</td><td>${esc(t.broker)} / ${esc(t.route)}</td><td>${esc(t.instrument)}</td><td>${esc(t.direction)}</td><td>${esc(t.entry_order_id)}</td><td>${esc(t.stop_price)}</td><td>${esc(t.target_price)}</td><td>${stamp(t.updated_at)}</td></tr>`).join('')||'<tr><td colspan="8" class="empty">No tracked executions</td></tr>';$('events').className=s.events.length?'':'empty';$('events').innerHTML=s.events.map(e=>`<div class="event ${esc(e.level)}"><span class="time">${new Date(e.timestamp).toLocaleString()}</span><span class="cat">${esc(e.category)}</span><span class="msg">${esc(e.message)}</span></div>`).join('')||'No operator events'}
-async function refresh(){try{const r=await fetch('/api/status',{cache:'no-store'});render(await r.json())}catch(e){$('health').textContent='OFFLINE';$('health-dot').style.background='var(--red)'}}setInterval(refresh,2000);refresh();
+async function refresh(){try{let t=token(),r=await fetch('/api/status',{cache:'no-store',headers:t?{'X-Silver-Bullet-Token':t}:{}});if(r.status===401){t=prompt('Control token')||'';sessionStorage.setItem('sb-token',t);r=await fetch('/api/status',{cache:'no-store',headers:{'X-Silver-Bullet-Token':t}})}if(!r.ok)throw Error(r.statusText);render(await r.json())}catch(e){$('health').textContent='OFFLINE';$('health-dot').style.background='var(--red)'}}setInterval(refresh,2000);refresh();
 async function act(path,body){try{const r=await post(path,body);$('control-result').textContent='Completed: '+JSON.stringify(r.result);refresh()}catch(e){$('control-result').textContent='Failed: '+e.message}}
 $('reconcile').onclick=()=>act('/api/reconcile',{});$('halt').onclick=()=>{const r=prompt('Reason for halting entries?');if(r)act('/api/kill-switch/engage',{reason:r,flatten:false})};$('flatten').onclick=()=>{const r=prompt('Type a reason to cancel orders and flatten all positions');if(r&&confirm('Cancel all open orders and flatten every configured broker position?'))act('/api/kill-switch/engage',{reason:r,flatten:true})};$('release').onclick=()=>{if(confirm('Release only after a clean reconciliation?'))act('/api/kill-switch/release',{confirmation:'RELEASE'})};
 </script></body></html>'''

@@ -1,0 +1,94 @@
+{
+  "route": "options",
+  "mode": "dry_run",
+  "allow_live": false,
+  "instruments": [
+    "ES",
+    "NQ"
+  ],
+  "state_path": ".silver-bullet/execution-state.json",
+  "halt_on_error": true,
+  "maximum_entry_delay_seconds": 5,
+  "exclusive_broker_account": true,
+  "reconciliation_interval_seconds": 30,
+  "proxy_symbols": {
+    "ES": "SPY",
+    "NQ": "QQQ"
+  },
+  "databento": {
+    "dataset": "GLBX.MDP3",
+    "symbols": {
+      "ES": "ES.c.0",
+      "NQ": "NQ.c.0"
+    },
+    "input_symbology": "continuous",
+    "heartbeat_interval_seconds": 30,
+    "reconnect": {
+      "initial_delay_seconds": 1,
+      "maximum_delay_seconds": 30,
+      "maximum_attempts": null
+    }
+  },
+  "alpaca": {
+    "stock_feed": "iex",
+    "option_feed": "indicative",
+    "maximum_dte": 7,
+    "page_limit": 1000,
+    "maximum_pages": 20
+  },
+  "options": {
+    "profile": "high_delta_long",
+    "risk_budget": 500,
+    "proxy_maximum_age_seconds": 90,
+    "proxy_wait_seconds": 2,
+    "selection": {
+      "max_spread_pct": 0.08,
+      "min_volume": 25,
+      "min_open_interest": 100,
+      "max_premium_per_contract": 750,
+      "maximum_candidates": 5,
+      "maximum_contracts": 10
+    }
+  },
+  "tradovate": {
+    "contracts": {
+      "ES": "REPLACE_WITH_ACTIVE_ES_CONTRACT",
+      "NQ": "REPLACE_WITH_ACTIVE_NQ_CONTRACT"
+    },
+    "quantities": {
+      "ES": 1,
+      "NQ": 1
+    },
+    "maximum_quantity": 2,
+    "maximum_signal_age_minutes": 2
+  },
+  "risk": {
+    "maximum_order_risk": 1000,
+    "minimum_equity": 1000,
+    "maximum_open_positions": 2,
+    "maximum_open_orders": 4,
+    "maximum_daily_loss": null
+  },
+  "context": {
+    "enabled": false,
+    "minimum_premium": null,
+    "limit": 100,
+    "gate": {
+      "allow_missing_context": false,
+      "max_context_age_minutes": 15,
+      "min_aligned_score": 0.55,
+      "min_score_edge": 0.05
+    }
+  },
+  "dashboard": {
+    "enabled": true,
+    "host": "127.0.0.1",
+    "port": 8765,
+    "control_token_environment": "SILVER_BULLET_CONTROL_TOKEN"
+  },
+  "warmup": {
+    "provider": "databento",
+    "data": {},
+    "contracts": {}
+  }
+}

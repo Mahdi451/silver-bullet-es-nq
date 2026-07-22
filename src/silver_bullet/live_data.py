@@ -362,6 +362,7 @@ class AlpacaProxyLiveFeed:
     async def run(self, callback: ProxyBarCallback) -> None:
         self._stop.clear()
         attempt = 0
+        owner_loop = asyncio.get_running_loop()
         while not self._stop.is_set():
             self._health = replace(
                 self._health,
@@ -386,9 +387,18 @@ class AlpacaProxyLiveFeed:
                         last_bar_at=self._clock(),
                         bar_count=self._health.bar_count + 1,
                     )
-                    result = callback(bar)
-                    if inspect.isawaitable(result):
-                        await result
+                    async def invoke_callback() -> None:
+                        result = callback(bar)
+                        if inspect.isawaitable(result):
+                            await result
+
+                    if asyncio.get_running_loop() is owner_loop:
+                        await invoke_callback()
+                    else:
+                        future = asyncio.run_coroutine_threadsafe(
+                            invoke_callback(), owner_loop
+                        )
+                        await asyncio.wrap_future(future)
 
                 stream.subscribe_bars(handler, *self.config.symbols)
                 self._health = replace(
@@ -459,10 +469,13 @@ class AlpacaProxyLiveFeed:
         if not api_key or not secret_key:
             raise RuntimeError("ALPACA_API_KEY and ALPACA_SECRET_KEY are required")
         try:
+            from alpaca.data.enums import DataFeed
             from alpaca.data.live import StockDataStream
         except ImportError as exc:  # pragma: no cover - optional dependency
             raise RuntimeError("install the live extra to use Alpaca streams") from exc
-        return StockDataStream(api_key, secret_key, feed=self.config.feed)
+        return StockDataStream(
+            api_key, secret_key, feed=DataFeed(self.config.feed.lower())
+        )
 
 
 class ReplayLiveFeed:

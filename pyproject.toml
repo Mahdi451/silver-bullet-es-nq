@@ -20,9 +20,14 @@ dev = [
     "pytest>=8.0",
     "ruff>=0.9",
 ]
+live = [
+    "alpaca-py",
+    "databento",
+]
 
 [project.scripts]
 silver-bullet-backtest = "silver_bullet.cli:main"
+silver-bullet-live = "silver_bullet.live_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
