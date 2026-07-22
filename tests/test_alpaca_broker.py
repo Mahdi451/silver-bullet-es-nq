@@ -200,6 +200,49 @@ def test_alpaca_close_reverses_multileg_position_intents():
     ]
 
 
+def test_alpaca_sdk_accepts_multileg_open_and_close_payloads():
+    requests = pytest.importorskip("alpaca.trading.requests")
+    broker, _, store = _broker()
+    candidate = _candidate(spread=True)
+    opened = broker.preview_option_order(candidate)
+
+    open_payload = {
+        **opened.payload,
+        "legs": [
+            requests.OptionLegRequest(**leg) for leg in opened.payload["legs"]
+        ],
+    }
+    open_request = requests.LimitOrderRequest(**open_payload)
+    assert open_request.order_class.value == "mleg"
+    assert [leg.position_intent.value for leg in open_request.legs] == [
+        "buy_to_open",
+        "sell_to_open",
+    ]
+
+    snapshot = broker.snapshot(as_of=NOW)
+    gate = LiveRiskGate(store, LiveRiskLimits(maximum_order_risk=500))
+    submitted = broker.submit_option(
+        candidate, snapshot=snapshot, risk_gate=gate, dry_run=False
+    )
+    trade = store.update(
+        submitted.client_order_id, status=ManagedTradeStatus.OPEN
+    )
+    closed = broker.close_trade(trade, "sdk_contract_check")
+
+    close_payload = {
+        **closed.payload,
+        "legs": [
+            requests.OptionLegRequest(**leg) for leg in closed.payload["legs"]
+        ],
+    }
+    close_request = requests.MarketOrderRequest(**close_payload)
+    assert close_request.order_class.value == "mleg"
+    assert [leg.position_intent.value for leg in close_request.legs] == [
+        "sell_to_close",
+        "buy_to_close",
+    ]
+
+
 def test_alpaca_live_mode_requires_double_opt_in():
     broker = AlpacaBroker(
         AlpacaBrokerConfig(

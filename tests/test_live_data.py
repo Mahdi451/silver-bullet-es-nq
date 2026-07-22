@@ -135,6 +135,51 @@ async def _test_databento_feed_reconnects_after_transport_error():
     assert feed.health.reconnect_count == 1
 
 
+def test_databento_sdk_records_match_live_normalizer():
+    dbn = pytest.importorskip("databento_dbn")
+    timestamp = pd.Timestamp("2026-07-22 14:30:00Z").value
+    mapping = dbn.SymbolMappingMsg(
+        publisher_id=1,
+        instrument_id=123,
+        ts_event=timestamp,
+        stype_in=dbn.SType.CONTINUOUS,
+        stype_in_symbol="ES.c.0",
+        stype_out=dbn.SType.RAW_SYMBOL,
+        stype_out_symbol="ESU6",
+        start_ts=timestamp,
+        end_ts=timestamp + pd.Timedelta(minutes=1).value,
+    )
+    record = dbn.OHLCVMsg(
+        rtype=dbn.RType.OHLCV_1M,
+        publisher_id=1,
+        instrument_id=123,
+        ts_event=timestamp,
+        open=6_300_000_000_000,
+        high=6_301_000_000_000,
+        low=6_299_000_000_000,
+        close=6_300_500_000_000,
+        volume=42,
+    )
+    feed = DatabentoLiveFeed(DatabentoLiveConfig(symbols={"ES": "ES.c.0"}))
+
+    assert feed._normalize_record(mapping) is None
+    bar = feed._normalize_record(record)
+
+    assert bar is not None
+    assert bar.instrument == "ES"
+    assert bar.contract == "ESU6"
+    assert bar.timestamp == pd.Timestamp(
+        "2026-07-22 10:30:00", tz="America/New_York"
+    )
+    assert (bar.open, bar.high, bar.low, bar.close, bar.volume) == (
+        6300.0,
+        6301.0,
+        6299.0,
+        6300.5,
+        42.0,
+    )
+
+
 def test_replay_feed_uses_live_callback_contract():
     asyncio.run(_test_replay_feed_uses_live_callback_contract())
 
@@ -166,6 +211,37 @@ def test_alpaca_proxy_normalization_and_latest_price_book():
     book.update(proxy)
     assert book.price("ES") == 4800.5
     assert book.price("spy") == 470.5
+
+
+def test_alpaca_sdk_bar_matches_proxy_normalizer():
+    bars = pytest.importorskip("alpaca.data.models.bars")
+    raw = {
+        "t": "2026-07-22T14:30:00Z",
+        "o": 630.0,
+        "h": 631.0,
+        "l": 629.0,
+        "c": 630.5,
+        "v": 1000,
+        "n": 10,
+        "vw": 630.2,
+    }
+    provider_bar = bars.Bar("SPY", raw)
+    feed = AlpacaProxyLiveFeed(AlpacaLiveConfig(symbols=("SPY",)))
+
+    bar = feed._normalize_bar(provider_bar)
+
+    assert bar is not None
+    assert bar.symbol == "SPY"
+    assert bar.timestamp == pd.Timestamp(
+        "2026-07-22 10:30:00", tz="America/New_York"
+    )
+    assert (bar.open, bar.high, bar.low, bar.close, bar.volume) == (
+        630.0,
+        631.0,
+        629.0,
+        630.5,
+        1000.0,
+    )
 
 
 def test_sync_alpaca_stream_dispatches_callback_on_runtime_event_loop():

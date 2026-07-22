@@ -40,9 +40,10 @@ historical checkpoint.
 ## Verification evidence
 
 ```text
-python -m pytest -q                         96 passed
+python -m pytest -q                         99 passed
 ruff check src tests examples              passed
 python -m compileall -q src tests examples passed
+python -m pip check                         passed
 git diff --check                           passed
 silver-bullet-live --help                  passed
 live.example.json parse                    passed
@@ -55,9 +56,9 @@ attention/engaged and back to healthy/armed.
 ## External acceptance still required
 
 No Databento, Alpaca, Unusual Whales, or Tradovate credentials are present in
-this environment, and the optional provider SDKs are not installed. Therefore
-no credentialed feed, Alpaca paper, Tradovate demo, or soak-test claim has been
-made.
+this environment. The optional Alpaca and Databento SDKs are installed and their
+local model contracts are tested, but no credentialed feed, Alpaca paper,
+Tradovate demo, or soak-test claim has been made.
 
 Resume with the acceptance checklist in `live-operations.md`. Any paper/demo
 order test still requires explicit operator authorization, correct account

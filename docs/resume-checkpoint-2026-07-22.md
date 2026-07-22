@@ -36,8 +36,12 @@ not more unconnected implementation.
 
 The local implementation is complete and its automated checks pass. No
 credentialed provider acceptance was attempted because this environment has no
-Databento, Alpaca, Unusual Whales, or Tradovate credentials, and the optional
-Databento and Alpaca SDKs are not installed.
+Databento, Alpaca, Unusual Whales, or Tradovate credentials.
+
+The optional provider libraries are now installed and locally checked against
+their real record, stream, and order-request models: `alpaca-py 0.43.5`,
+`databento 0.82.0`, and `databento-dbn 0.63.0`. The project pins the validated
+minor release lines so a later breaking SDK release is not adopted silently.
 
 No paper, demo, or live order was submitted. Real-money trading remains disabled
 in `live.example.json` with `allow_live: false`, and live mode also requires the
@@ -46,9 +50,10 @@ separate command-line confirmation described in the runbook.
 Verification recorded at the pause point:
 
 ```text
-python -m pytest -q                         96 passed
+python -m pytest -q                         99 passed
 ruff check src tests examples              passed
 python -m compileall -q src tests examples passed
+python -m pip check                         passed
 live.example.json parse                    passed
 silver-bullet-live --help                  passed
 git diff --check                           passed
@@ -62,7 +67,7 @@ exercised through the browser, and the visible state changed as expected.
 Keep live mode disabled until all applicable acceptance items below have saved
 evidence:
 
-- [ ] Install the optional live-provider dependencies in the resume environment.
+- [x] Install and locally validate the optional live-provider dependencies.
 - [ ] Supply credentials through environment variables, never committed files.
 - [ ] Confirm current ES and NQ contract mappings and data entitlements.
 - [ ] Observe Databento completed-bar timing and reconnect behavior in dry-run.

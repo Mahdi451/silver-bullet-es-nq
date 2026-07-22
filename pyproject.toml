@@ -21,8 +21,8 @@ dev = [
     "ruff>=0.9",
 ]
 live = [
-    "alpaca-py",
-    "databento",
+    "alpaca-py>=0.43.5,<0.44",
+    "databento>=0.82,<0.83",
 ]
 
 [project.scripts]
